@@ -1,0 +1,31 @@
+<h3>{{ i18n "backlinks" }}</h3>
+<ul class="backlinks">
+    {{$url := urls.Parse .Site.BaseURL }}
+    {{$host := strings.TrimRight "/" $url.Path }}
+    {{$curPage := strings.TrimPrefix $host (strings.TrimRight "/" .Page.RelPermalink)}}
+    {{$curPage = cond (eq $curPage "") "/" $curPage}}
+    {{/* Built once per build by layouts/partials/lib/build-index.html — no external tool required */}}
+    {{$idx := partialCached "lib/build-index.html" . "build-index" }}
+    {{$inbound := index $idx.backlinks $curPage}}
+    {{if $inbound}}
+    {{$backlinks := dict "SENTINEL" "SENTINEL"}}
+    {{range $k, $v := $inbound}}
+      {{$cleanedInbound := replace $v.source " " "-"}}
+      {{$ctx := $v.text}}
+      {{$backlinks = merge $backlinks (dict $cleanedInbound $ctx)}}
+    {{end}}
+    {{- range $lnk, $ctx := $backlinks -}}
+      {{$l := printf "%s%s/" $host $lnk}}
+      {{$l = cond (eq $l "//") "/" $l}}
+      {{with (index $idx.content $lnk)}}
+      <li>
+        <a href="{{$l}}" data-ctx="{{$ctx}}" data-src="{{$lnk}}" class="internal-link">{{index (index . "title")}}</a>
+      </li>
+      {{end}}
+    {{- end -}}
+    {{else}}
+    <li>
+      {{ i18n "no_backlinks" }}
+    </li>
+    {{end}}
+</ul>

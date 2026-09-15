@@ -1,0 +1,132 @@
+{{- /*
+  build-index.html
+  -----------------
+  Pure-Hugo replacement for the old `hugo-obsidian` preprocessing step.
+
+  hugo-obsidian used to run *before* `hugo build`, walking the content/
+  folder itself, parsing wikilinks by note TITLE (Obsidian-vault style),
+  and writing assets/indices/{content,link}Index.json for Hugo to read
+  back in with resources.Get.
+
+  This partial does the same job entirely inside the normal `hugo`
+  build, using Hugo's own page graph and GetPage resolution (the same
+  resolution used by layouts/_default/_markup/render-link.html), so
+  links resolve the same way whether they're rendered on the page or
+  indexed for search/backlinks/graph. No external binary, no
+  pre-build step, no gitignored generated files.
+
+  It supports plain Markdown links `[text](path)` as the primary,
+  "normal Hugo markdown" syntax, and still understands Obsidian-style
+  `[[wikilinks]]` for anyone migrating content over, since both can
+  appear in RawContent.
+
+  Call this via `partialCached` with a constant cache key so the
+  (relatively expensive) full-site scan only runs once per build:
+
+    {{ $idx := partialCached "lib/build-index.html" . "build-index" }}
+
+  Returns a dict:
+    .content   map[id]{title, content, lastmodified, tags}
+    .links     map[id][]{source, target, text}   -- outgoing, keyed by source
+    .backlinks map[id][]{source, target, text}   -- incoming, keyed by target
+    .edges     []{source, target, text}          -- flat list, for the graph
+*/ -}}
+
+{{- $content := dict -}}
+{{- $outLinks := dict -}}
+{{- $backLinks := dict -}}
+{{- $edges := slice -}}
+
+{{- range .Site.Pages -}}
+  {{- $p := . -}}
+  {{- /* Only markdown-backed pages (skips auto-generated taxonomy/term pages) */ -}}
+  {{- if $p.File -}}
+    {{- $srcID := cond (eq $p.RelPermalink "/") "/" (strings.TrimSuffix "/" $p.RelPermalink) -}}
+
+    {{- /* ---- content entry (search index + link-preview popovers) ---- */ -}}
+    {{- $tags := slice -}}
+    {{- range $p.GetTerms "tags" -}}
+      {{- $tags = $tags | append .LinkTitle -}}
+    {{- end -}}
+    {{- $lastmod := "" -}}
+    {{- with $p.Lastmod -}}{{ $lastmod = .Format "2006-01-02T15:04:05Z07:00" }}{{- end -}}
+    {{- $content = merge $content (dict $srcID (dict
+        "title" $p.Title
+        "content" $p.RawContent
+        "lastmodified" $lastmod
+        "tags" $tags
+      ))
+    -}}
+
+    {{- /* ---- find link tokens in the raw markdown, skipping code ---- */ -}}
+    {{- $raw := $p.RawContent -}}
+    {{- $codefences := $raw | findRE "\\x60[^\\x60\\n]+\\x60" -}}
+    {{- $codeblocks := $raw | findRE "\\x60{3}[^\\x60]+\\x60{3}" -}}
+    {{- $code := $codefences | union $codeblocks -}}
+
+    {{- $wikitokens := $raw | findRE `!?\[\[\S[^\[\]\|]*(?:\|[^\[\]]*)?\S\]\]` -}}
+    {{- $mdtokens := $raw | findRE `!?\[[^\]\n]*\]\([^)\n]+\)` -}}
+
+    {{- $pageEdges := slice -}}
+
+    {{- /* -- Obsidian-style [[wikilinks]], resolved by title/path via GetPage -- */ -}}
+    {{- range $wikitokens -}}
+      {{- $tok := . -}}
+      {{- $incode := false -}}
+      {{- range $code -}}{{- if in . $tok -}}{{- $incode = true -}}{{- end -}}{{- end -}}
+      {{- if and (not $incode) (not (hasPrefix $tok "!")) -}}
+        {{- $inner := $tok | strings.TrimPrefix "[[" | strings.TrimSuffix "]]" -}}
+        {{- $split := split $inner "|" -}}
+        {{- $rawpath := index $split 0 -}}
+        {{- $path := index (split $rawpath "#") 0 -}}
+        {{- $text := default $rawpath (index $split 1) -}}
+        {{- with $p.GetPage $path -}}
+          {{- $tgtID := cond (eq .RelPermalink "/") "/" (strings.TrimSuffix "/" .RelPermalink) -}}
+          {{- $pageEdges = $pageEdges | append (dict "source" $srcID "target" $tgtID "text" $text) -}}
+        {{- end -}}
+      {{- end -}}
+    {{- end -}}
+
+    {{- /* -- normal Markdown links [text](path), the primary syntax -- */ -}}
+    {{- range $mdtokens -}}
+      {{- $tok := . -}}
+      {{- if not (hasPrefix $tok "!") -}}
+        {{- $incode := false -}}
+        {{- range $code -}}{{- if in . $tok -}}{{- $incode = true -}}{{- end -}}{{- end -}}
+        {{- if not $incode -}}
+          {{- $trimmed := $tok | strings.TrimPrefix "[" | strings.TrimSuffix ")" -}}
+          {{- $parts := split $trimmed "](" -}}
+          {{- if eq (len $parts) 2 -}}
+            {{- $text := index $parts 0 -}}
+            {{- $dest := index $parts 1 | strings.TrimSuffix ".md" -}}
+            {{- if not (or (hasPrefix $dest "http") (hasPrefix $dest "#") (hasPrefix $dest "mailto:")) -}}
+              {{- $lookup := replace $dest "%20" " " -}}
+              {{- with $p.GetPage $lookup -}}
+                {{- $tgtID := cond (eq .RelPermalink "/") "/" (strings.TrimSuffix "/" .RelPermalink) -}}
+                {{- $pageEdges = $pageEdges | append (dict "source" $srcID "target" $tgtID "text" $text) -}}
+              {{- end -}}
+            {{- end -}}
+          {{- end -}}
+        {{- end -}}
+      {{- end -}}
+    {{- end -}}
+
+    {{- if gt (len $pageEdges) 0 -}}
+      {{- $outLinks = merge $outLinks (dict $srcID $pageEdges) -}}
+      {{- range $pageEdges -}}
+        {{- $e := . -}}
+        {{- $edges = $edges | append $e -}}
+        {{- $existing := default slice (index $backLinks $e.target) -}}
+        {{- $backLinks = merge $backLinks (dict $e.target ($existing | append $e)) -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+
+{{- return (dict
+    "content" $content
+    "links" $outLinks
+    "backlinks" $backLinks
+    "edges" $edges
+  )
+-}}

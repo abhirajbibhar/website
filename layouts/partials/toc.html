@@ -1,0 +1,8 @@
+{{ if (and hugo.Data.config.enableToc (ne .Params.enableToc false) (gt .WordCount 250)) }}
+<aside class="mainTOC">
+    <details {{ if hugo.Data.config.openToc }}open {{ end }}>
+        <summary>{{ i18n "toc" }}</summary>
+        {{ .TableOfContents }}
+    </details>
+</aside>
+{{end}}
