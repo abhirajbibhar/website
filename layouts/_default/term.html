@@ -3,10 +3,9 @@
 {{ partial "head.html" . }}
 
 <body>
-{{partial "search.html" .}}
+{{partial "nav.html" .}}
 <div class="singlePage">
     <!-- Begin actual content -->
-    {{partial "header.html" .}}
     <article>
         <h1>{{ i18n "tag" }}: {{ .Title }}</h1>
         {{with .Params.description}}

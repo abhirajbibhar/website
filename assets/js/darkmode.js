@@ -11,27 +11,46 @@ if (currentTheme) {
   syntaxTheme.href = currentTheme === 'dark' ?  '{{ $darkSyntax.Permalink }}' :  '{{ $lightSyntax.Permalink }}';
 }
 
-const switchTheme = (e) => {
-  if (e.target.checked) {
-    document.documentElement.setAttribute('saved-theme', 'dark');
-    localStorage.setItem('theme', 'dark');
-    syntaxTheme.href = '{{ $darkSyntax.Permalink }}';
-  }
-  else {
-    document.documentElement.setAttribute('saved-theme', 'light')
-    localStorage.setItem('theme', 'light')
-    syntaxTheme.href = '{{ $lightSyntax.Permalink }}';
+const applyTheme = (theme) => {
+  document.documentElement.setAttribute('saved-theme', theme);
+  localStorage.setItem('theme', theme);
+  syntaxTheme.href = theme === 'dark' ? '{{ $darkSyntax.Permalink }}' : '{{ $lightSyntax.Permalink }}';
+
+  // Sync the new switch toggle (nav bar)
+  const switchEl = document.querySelector('#theme-toggle');
+  if (switchEl) {
+    switchEl.setAttribute('aria-checked', theme === 'dark' ? 'true' : 'false');
   }
 }
 
+const switchTheme = (e) => {
+  // Support both old checkbox (#darkmode-toggle) and new switch (#theme-toggle)
+  const isDark = e.target.checked || e.target.getAttribute('aria-checked') === 'true';
+  applyTheme(isDark ? 'dark' : 'light');
+}
+
+const toggleSwitchTheme = () => {
+  const current = document.documentElement.getAttribute('saved-theme');
+  applyTheme(current === 'dark' ? 'light' : 'dark');
+}
+
 window.addEventListener('DOMContentLoaded', () => {
-  // Darkmode toggle
+  // Legacy darkmode toggle (checkbox)
   const toggleSwitch = document.querySelector('#darkmode-toggle')
+  if (toggleSwitch) {
+    toggleSwitch.addEventListener('change', switchTheme, false)
+    if (currentTheme === 'dark') {
+      toggleSwitch.checked = true
+    }
+  }
 
-  // listen for toggle
-  toggleSwitch.addEventListener('change', switchTheme, false)
-
-  if (currentTheme === 'dark') {
-    toggleSwitch.checked = true
+  // New nav bar switch toggle
+  const navSwitch = document.querySelector('#theme-toggle');
+  if (navSwitch) {
+    navSwitch.setAttribute('aria-checked', currentTheme === 'dark' ? 'true' : 'false');
+    navSwitch.addEventListener('click', () => {
+      const isDark = navSwitch.getAttribute('aria-checked') === 'true';
+      applyTheme(isDark ? 'light' : 'dark');
+    });
   }
 })

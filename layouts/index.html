@@ -3,11 +3,18 @@
 {{ partial "head.html" . }}
 
 <body>
-{{partial "search.html" .}}
+{{partial "nav.html" .}}
 <div class="singlePage">
     <!-- Begin actual content -->
-    {{partial "header.html" .}}
     <article>
+        {{- $config := cond (eq $.Site.Language.Lang "en") "config" (printf "config.%s" $.Site.Language.Lang) -}}
+        {{- $data := index hugo.Data $config -}}
+        <header class="home-header">
+            <h1 id="page-title">{{ $data.page_title | default hugo.Data.config.page_title }}</h1>
+            {{- with $data.subtitle | default hugo.Data.config.subtitle -}}
+            <p class="subtitle">{{ . }}</p>
+            {{- end -}}
+        </header>
         {{partial "toc.html" .}}
         {{partial "textprocessing.html" . }}
         {{if hugo.Data.config.enableRecentNotes}}

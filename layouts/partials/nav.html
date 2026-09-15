@@ -1,0 +1,61 @@
+{{- $brand := index hugo.Data.config "page_title" | default .Site.Title -}}
+{{- $here := .RelPermalink -}}
+{{ partial "search.html" . }}
+<div class="bar-wrap">
+  <nav class="dropup-bar" aria-label="{{ i18n "primary_nav" }}">
+
+    {{/* Disclosure pattern rather than role="menu": the panel mixes links with
+         a switch and a toggle, which menuitem semantics can't describe. */}}
+    <div class="dropup left" data-open="false">
+      <button class="dropup-btn" id="dock-menu-btn" type="button" aria-expanded="false"
+        aria-controls="dock-menu-panel" aria-label="{{ i18n "menu" }}">
+        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/></svg>
+        <svg class="chev" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg>
+      </button>
+      <div class="dropup-panel" id="dock-menu-panel" aria-labelledby="dock-menu-btn">
+        <button class="panel-item" id="search-icon" type="button" aria-label="{{ i18n "search" }}">
+          {{ partial "icon.html" "search" }}
+          <span>{{ i18n "search" }}</span>
+          <span class="kbd-hint" data-keyshortcut aria-hidden="true"></span>
+        </button>
+        {{- range .Site.Menus.main -}}
+        {{- $target := .URL | relLangURL -}}
+        {{- $active := or (eq $here $target) (and (ne $target "/") (hasPrefix $here $target)) -}}
+        <a href="{{ $target }}"{{ if $active }} class="is-active" aria-current="page"{{ end }}>{{ partial "icon.html" .Identifier }}<span>{{ .Name }}</span></a>
+        {{- end -}}
+        <span class="aura-dot" aria-hidden="true"></span>
+        <span class="aura-dot" aria-hidden="true"></span>
+      </div>
+    </div>
+
+    <!--a class="brand" href="{{ "" | relLangURL }}"><strong>{{ $brand }}</strong></a-->
+
+    <div class="dropup right" data-open="false">
+      <button class="dropup-btn" id="dock-account-btn" type="button" aria-expanded="false"
+        aria-controls="dock-account-panel" aria-label="{{ i18n "account" }}">
+        <svg class="chev" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg>
+        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.5"/><path d="M4.5 20c1-3.6 4-5.5 7.5-5.5s6.5 1.9 7.5 5.5"/></svg>
+      </button>
+      <div class="dropup-panel" id="dock-account-panel" aria-labelledby="dock-account-btn">
+        <div class="theme-switch-row">
+          <span class="theme-icon" aria-hidden="true">{{ partial "icon.html" "sun" }}</span>
+          <button id="theme-toggle" class="switch" type="button" role="switch" aria-checked="false" aria-label="{{ i18n "dark_mode" }}">
+            <span class="switch-knob" aria-hidden="true"></span>
+          </button>
+          <span class="theme-icon" aria-hidden="true">{{ partial "icon.html" "moon" }}</span>
+        </div>
+        {{ partial "readermode.html" . }}
+        <div class="divider" role="presentation"></div>
+        {{- range (index hugo.Data.config "links") -}}
+        {{- $iconId := .link_name | lower -}}
+        <a href="{{ .link }}" target="_blank" rel="noopener">{{ partial "icon.html" $iconId }}<span>{{ .link_name }}</span></a>
+        {{- end -}}
+        <span class="aura-dot" aria-hidden="true"></span>
+        <span class="aura-dot" aria-hidden="true"></span>
+      </div>
+    </div>
+
+    <span class="aura-dot" aria-hidden="true"></span>
+    <span class="aura-dot" aria-hidden="true"></span>
+  </nav>
+</div>

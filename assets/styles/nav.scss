@@ -1,0 +1,388 @@
+// ============================================================================
+// Drop-up dock navigation
+// ----------------------------------------------------------------------------
+// Layout and motion come from the custom dock component; the palette is wired
+// to the Quartz v5 tokens (see custom.scss) so it themes with light/dark.
+// ============================================================================
+
+.bar-wrap {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  z-index: 100;
+  padding: 0 14px 14px;
+  pointer-events: none;
+}
+
+.dropup-bar {
+  pointer-events: auto;
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--bar-bg);
+  border: 1px solid var(--bar-border);
+  border-radius: 18px;
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  font-family: var(--bodyFont);
+}
+
+.dropup-bar::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: inherit;
+  box-shadow: 0 0 2px 1px var(--link);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+// --- aura dots --------------------------------------------------------------
+.aura-dot {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: var(--dot-color, var(--link));
+  box-shadow:
+    0 0 5px 2px var(--dot-color, var(--link)),
+    0 0 5px 2px var(--dot-color, var(--link));
+  offset-path: border-box;
+  offset-anchor: 50% 50%;
+  animation: dock-aura-revolve 24s linear infinite;
+  animation-delay: var(--dot-delay, 0s);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.aura-dot:nth-of-type(1) {
+  --dot-color: var(--link);
+  --dot-delay: 0s;
+}
+
+.aura-dot:nth-of-type(2) {
+  --dot-color: var(--link);
+  --dot-delay: -12s;
+}
+
+@keyframes dock-aura-revolve {
+  to {
+    offset-distance: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aura-dot {
+    animation: none;
+  }
+
+  .dropup-panel,
+  .dropup[data-open="true"] .dropup-panel,
+  .switch-knob,
+  .dropup-btn,
+  .panel-item {
+    transition: none;
+  }
+}
+
+// --- focus ------------------------------------------------------------------
+// The dock is reachable by keyboard before anything else on the page, so the
+// ring has to be unmistakable against both the panel and the translucent bar.
+.dropup-btn:focus-visible,
+.panel-item:focus-visible,
+.dropup-panel a:focus-visible,
+.switch:focus-visible,
+a.brand:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+
+// --- brand ------------------------------------------------------------------
+a.brand:link,
+a.brand:visited {
+  font-family: var(--titleFont);
+  font-size: 1.5rem;
+  letter-spacing: 0.02em;
+  color: var(--ink-dim);
+  text-decoration: none;
+  white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// --- drop-up component ------------------------------------------------------
+.dropup {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.dropup-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.dropup-btn:hover {
+  background: var(--hover);
+}
+
+.dropup[data-open="true"] .dropup-btn {
+  background: var(--hover);
+  border-color: var(--panel-border);
+}
+
+.dropup-btn svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.dropup-btn .chev {
+  width: 12px;
+  height: 12px;
+  color: var(--ink-dim);
+  transition: transform 0.2s ease;
+}
+
+.dropup[data-open="true"] .dropup-btn .chev {
+  transform: rotate(180deg);
+}
+
+.dropup-panel {
+  position: absolute;
+  bottom: calc(100% + 20px);
+  min-width: 190px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  transform: translateY(6px) scale(0.98);
+  transform-origin: bottom;
+  pointer-events: none;
+  // `visibility` keeps the collapsed panel out of the tab order and the
+  // accessibility tree; pointer-events alone would leave it keyboard-reachable.
+  // Delayed on close so the fade-out still plays.
+  visibility: hidden;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease,
+    visibility 0s linear 0.15s;
+}
+
+.dropup[data-open="true"] .dropup-panel {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+  visibility: visible;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease,
+    visibility 0s;
+}
+
+.dropup-panel::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: inherit;
+  box-shadow: 0 0 2px 1px var(--link);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.dropup.left .dropup-panel {
+  left: 0;
+}
+
+.dropup.right .dropup-panel {
+  right: 0;
+}
+
+.dropup-panel a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.dropup-panel a:hover {
+  background: var(--hover);
+}
+
+.dropup-panel a.is-active {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.dropup-panel a.is-active svg {
+  color: var(--accent);
+}
+
+.dropup-panel a svg {
+  width: 16px;
+  height: 16px;
+  color: var(--ink-dim);
+  flex-shrink: 0;
+}
+
+.dropup-panel .divider {
+  height: 1px;
+  background: var(--panel-border);
+  margin: 5px 6px;
+}
+
+// --- actionable rows inside a panel (search, reader mode) -------------------
+// Styled to match the anchor rows in the same panel, so the menu reads as one
+// list regardless of which entries happen to be links.
+.panel-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.9rem;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  & svg {
+    width: 16px;
+    height: 16px;
+    color: var(--ink-dim);
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background: var(--hover);
+  }
+}
+
+// Keyboard shortcut hint on the search row.
+.kbd-hint {
+  margin-left: auto;
+  padding: 3px 5px;
+  border: 1px solid var(--panel-border);
+  border-radius: 5px;
+  font-family: var(--codeFont);
+  font-size: 0.7rem;
+  line-height: 1;
+  color: var(--ink-dim);
+  white-space: nowrap;
+}
+
+:root[reader-mode="on"] .panel-item.readermode {
+  color: var(--accent);
+
+  & svg {
+    color: var(--accent);
+  }
+}
+
+// --- theme switch inside the right-hand panel -------------------------------
+.theme-switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 6px 10px 10px;
+}
+
+.theme-icon {
+  display: inline-flex;
+  color: var(--ink-dim);
+}
+
+.theme-icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.switch {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  border-radius: 999px;
+  border: 1px solid var(--panel-border);
+  background: var(--switch-track);
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.switch-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--switch-knob);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: transform 0.18s ease;
+}
+
+.switch[aria-checked="true"] .switch-knob {
+  transform: translateX(18px);
+}
+
+.switch[aria-checked="true"] {
+  background: var(--link);
+}
+
+// --- small screens ----------------------------------------------------------
+@media all and (max-width: 480px) {
+  .bar-wrap {
+    padding: 0 10px 10px;
+  }
+
+  .dropup-bar {
+    gap: 4px;
+    padding: 6px;
+  }
+
+  .dropup-btn {
+    padding: 7px 8px;
+  }
+
+  a.brand:link,
+  a.brand:visited {
+    font-size: 1.05rem;
+  }
+}

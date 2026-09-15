@@ -1,5 +1,22 @@
 // Add your own CSS here!
 
+// Home page header
+.home-header {
+  display: block;
+  margin-bottom: 2em;
+
+  & > h1 {
+    margin: 0 0 0.3em;
+    font-size: 2.5em;
+  }
+
+  & > .subtitle {
+    margin: 0;
+    opacity: 0.6;
+    font-size: 1.1em;
+  }
+}
+
 :root {
   --light: #faf8f8;
   --dark: #141021;
@@ -11,6 +28,22 @@
   --lightgray: #f0f0f0;
   --outlinegray: #dadada;
   --million-progress-bar-color: var(--secondary);
+
+  // Nav bar tokens
+  --bar-bg: rgba(250, 248, 248, 0.85);
+  --bar-border: rgba(0, 0, 0, 0.08);
+  --link: var(--secondary);
+  --ink: var(--dark);
+  --ink-dim: var(--gray);
+  --hover: rgba(0, 0, 0, 0.05);
+  --panel-bg: var(--light);
+  --panel-border: var(--outlinegray);
+  --accent: var(--primary);
+  --switch-track: var(--outlinegray);
+  --switch-knob: var(--light);
+  --titleFont: var(--font-header);
+  --bodyFont: var(--font-body);
+  --codeFont: var(--font-mono);
 }
 
 [saved-theme="dark"] {
@@ -23,7 +56,17 @@
   --gray: #d4d4d4 !important;
   --lightgray: #292633 !important;
   --outlinegray: #343434 !important;
-}
 
+  // Nav bar tokens (dark)
+  --bar-bg: rgba(30, 30, 33, 0.88) !important;
+  --bar-border: rgba(255, 255, 255, 0.08) !important;
+  --ink: var(--dark) !important;
+  --ink-dim: var(--gray) !important;
+  --hover: rgba(255, 255, 255, 0.06) !important;
+  --panel-bg: var(--light) !important;
+  --panel-border: var(--outlinegray) !important;
+  --switch-track: var(--outlinegray) !important;
+  --switch-knob: var(--light) !important;
+}
 
 

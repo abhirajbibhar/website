@@ -1,9 +1,51 @@
-// Replace this with your own font imports!
-@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Inter:wght@400;600;700&family=Source+Sans+Pro:wght@400;600&display=swap');
+/* et-book local fonts */
+@font-face {
+  font-family: "et-book";
+  src: url("/et-book/et-book-bold-line-figures.woff") format("woff");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "et-book";
+  src: url("/et-book/et-book-display-italic-old-style-figures.woff") format("woff");
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "et-book";
+  src: url("/et-book/et-book-roman-line-figures.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "et-book";
+  src: url("/et-book/et-book-roman-old-style-figures.woff") format("woff");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "et-book";
+  src: url("/et-book/et-book-semi-bold-old-style-figures.woff") format("woff");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+// Google Fonts for mono + UI
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Inter:wght@400;600;700&display=swap');
 :root {
-  --font-body: "Source Sans Pro";
-  --font-header: "Inter";
-  --font-mono: "Fira Code"
+  --font-body: "et-book", Georgia, serif;
+  --font-header: "et-book", Georgia, serif;
+  --font-mono: "Fira Code", monospace;
+  font-size: 18px;
 }
 
 // typography
@@ -21,9 +63,11 @@ html {
 }
 
 .singlePage {
-  padding: 4em 30vw;
+  padding: 2.5em 10vw 100px;
+  max-width: 1200px;
+  margin: 0 auto;
   @media all and (max-width: 1200px) {
-    padding: 25px 5vw;
+    padding: 25px 5vw 100px;
   }
 }
 
@@ -198,6 +242,7 @@ article {
       padding: 0 0.1em;
       margin: auto -0.1em;
       border-radius: 3px;
+      font-style: italic;
 
       &.broken {
         opacity: 0.5;

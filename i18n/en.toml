@@ -63,3 +63,12 @@ other = "Table of Contents"
 
 [copyright]
 other = "© {{ .name }} - {{ .year }}"
+
+[primary_nav]
+other = "Primary navigation"
+
+[menu]
+other = "Menu"
+
+[account]
+other = "Account"

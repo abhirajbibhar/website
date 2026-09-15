@@ -1,4 +1,4 @@
-baseURL = "https://abhirajbibhar.pages.dev/"
+baseURL = "https://demo.abhirajbibhar.pages.dev/"
 defaultContentLanguage = "en"
 # languageCode deprecated; use defaultContentLanguage / languages
 relativeURLs = false
@@ -9,7 +9,17 @@ ignoreFiles = [
 ]
 summaryLength = 20
 paginate = 10
-enableGitInfo = false
+enableGitInfo = true
+
+[[menu.main]]
+  name = "Home"
+  url = "/"
+  identifier = "home"
+
+[[menu.main]]
+  name = "Notes"
+  url = "/notes"
+  identifier = "note"
 
 [services]
   [services.googleAnalytics]

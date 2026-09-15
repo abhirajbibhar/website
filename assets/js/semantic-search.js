@@ -1,4 +1,4 @@
-const apiKey = "{{$.Site.Data.config.operandApiKey}}"
+const apiKey = "{{$.Hugo.Data.config.operandApiKey}}"
 
 async function searchContents(query) {
   const response = await fetch('https://prod.operand.ai/v3/search/objects', {
