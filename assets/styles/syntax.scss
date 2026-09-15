@@ -1,120 +1,62 @@
-// ============================================================================
-// Code blocks
-// ----------------------------------------------------------------------------
-// Hugo emits a chroma <table> for line numbers (lineNumbersInTable = true).
-// These rules reshape that markup into the Quartz v5 code block: a thin
-// rounded border, no background, the gutter number column folded into a
-// left rail, and a soft highlight for marked lines.
-// ============================================================================
-
-.highlight {
-  position: relative;
-  margin: 1rem 0;
-
-  & > .chroma {
-    border: 1px solid var(--lightgray);
-    border-radius: 5px;
-    overflow: hidden;
-    background-color: transparent;
-  }
-
-  // --- line number table ---------------------------------------------------
-  .lntable {
-    width: 100%;
-    margin: 0;
-    border: 0;
-    border-spacing: 0;
-    border-collapse: collapse;
-
-    .lntd {
-      padding: 0;
-      margin: 0;
-      border: 0;
-      vertical-align: top;
-
-      &:first-of-type {
-        width: 1%;
-        white-space: nowrap;
-        user-select: none;
-      }
-
-      & > pre.chroma {
-        padding-right: 0;
-      }
-    }
-  }
-
-  pre.chroma {
-    margin: 0;
-    padding: 0.5rem 0;
-    border: none;
-    border-radius: 0;
-    background-color: transparent;
-    font-family: var(--codeFont);
-    overflow-x: auto;
-
-    -moz-tab-size: 4;
-    -o-tab-size: 4;
-    tab-size: 4;
-
-    & > code {
-      background: none;
-      padding: 0;
-      font-size: 0.85rem;
-      font-family: var(--codeFont);
-      font-variant-ligatures: none;
-      line-height: 1.6;
-    }
-
-    // gutter numbers
-    .lnt,
-    .ln {
-      padding: 0 0.75rem 0 0.5rem;
-      margin: 0;
-      color: rgba(115, 138, 148, 0.6);
-      border: 0;
-    }
-  }
-
-  // --- highlighted / marked lines -----------------------------------------
-  .hl {
-    display: block;
-    width: 100%;
-    background-color: var(--highlight);
-    border-left: 3px solid var(--secondary);
-  }
-
-  & [data-highlighted-chars] {
-    background-color: var(--highlight);
-    border-radius: 5px;
-  }
-
-  .gd {
-    color: #8b080b;
-  }
-
-  .gi {
-    font-weight: bold;
-  }
+// Overrides
+/* Background */
+.chroma {
+  overflow: hidden !important;
+  background-color: var(--lightgray) !important;
 }
 
-// Inline code
-code {
-  font-size: 0.9em;
-  color: var(--dark);
-  font-family: var(--codeFont);
-  font-variant-ligatures: none;
-  border-radius: 5px;
-  padding: 0.1rem 0.2rem;
-  background: var(--lightgray);
+/* LineTable */
+.chroma .lntable {
+  width: auto !important;
+  overflow: auto !important;
+  display: block !important;
 }
 
-figure[data-rehype-pretty-code-figure] {
-  margin: 0;
-  position: relative;
-  line-height: 1.6rem;
+/* LineHighlight */
+.chroma .hl {
+  display: block !important;
+  width: 100% !important;
+}
 
-  & > pre {
-    padding: 0;
-  }
+/* LineNumbersTable */
+.chroma .lnt {
+  margin-right: 0.0em !important;
+  padding: 0 0.0em 0 0.0em !important;
+}
+
+/* LineNumbers */
+.chroma .ln {
+  margin-right: 0.0em !important;
+  padding: 0 0.0em 0 0.0em !important;
+}
+
+/* GenericDeleted */
+.chroma .gd {
+  color: #8b080b !important;
+}
+
+/* GenericInserted */
+.chroma .gi {
+  font-weight: bold !important;
+}
+
+.lntd:first-of-type > .chroma {
+  padding-right: 0 !important;
+}
+
+.chroma code {
+  font-family: var(--font-mono) !important;
+  font-size: 0.85em !important;
+  line-height: 2em !important;
+  background: none !important;
+  padding: 0 !important;
+}
+
+.chroma {
+  border-radius: 3px !important;
+  margin: 0 !important;
+}
+
+pre.chroma {
+  -moz-tab-size:4;-o-tab-size:4;tab-size:4;
 }

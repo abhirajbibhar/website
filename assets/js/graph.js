@@ -13,11 +13,6 @@ async function drawGraph(baseUrl, isHome, pathColors, graphConfig) {
   const container = document.getElementById("graph-container")
   const { index, links, content } = await fetchData
 
-  // Reader mode takes the sidebar out of the layout, so the container can be
-  // zero-width. Drawing now would bake in a 0px-wide SVG; window.renderGraph()
-  // is called again when the sidebar comes back.
-  if (container.offsetWidth === 0) return
-
   // Use .pathname to remove hashes / searchParams / text fragments
   const cleanUrl = window.location.origin + window.location.pathname
 
@@ -54,16 +49,6 @@ async function drawGraph(baseUrl, isHome, pathColors, graphConfig) {
   const data = {
     nodes: [...neighbours].map((id) => ({ id })),
     links: copyLinks.filter((l) => neighbours.has(l.source) && neighbours.has(l.target)),
-  }
-
-  // A page with no links of its own renders a single lonely node. That happens
-  // on any list page (sections, tags, and new pages that nothing links to yet),
-  // which looks like the graph failed to load. Fall back to the whole vault so
-  // there is always something to look at.
-  if (data.links.length === 0 && data.nodes.length <= 1) {
-    parseIdsFromLinks(copyLinks).forEach((id) => neighbours.add(id))
-    data.nodes = [...neighbours].map((id) => ({ id }))
-    data.links = copyLinks
   }
 
   const color = (d) => {

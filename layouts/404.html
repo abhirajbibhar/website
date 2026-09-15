@@ -1,9 +1,15 @@
-{{ define "main" }}
-<article class="popover-hint">
-  <div class="markdown-preview-view markdown-rendered">
-    <h1>404</h1>
-    <p>{{ i18n "404_message" }}</p>
-    <p><a href="{{ "" | absLangURL }}">{{ i18n "404_back" }}</a></p>
-  </div>
-</article>
-{{ end }}
+<!DOCTYPE html>
+<html lang="{{ .Lang }}">
+{{ partial "head.html" . }}
+
+<body>
+<div class="singlePage">
+    {{partial "darkmode.html" .}}
+    <div class="centered">
+        <h1>404.</h1>
+        <h3>{{ i18n "404_message" }}</h3>
+        <a href="{{ .Site.BaseURL }}">{{ i18n "404_back" }}</a>
+    </div>
+</div>
+</body>
+</html>

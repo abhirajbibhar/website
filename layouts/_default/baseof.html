@@ -1,48 +1,10 @@
 <!DOCTYPE html>
 <html lang="{{ .Lang }}">
-{{ partial "head.html" . }}
-{{- $minimal := eq .Kind "404" -}}
-<body data-slug="{{ .RelPermalink }}">
-<div id="quartz-root" class="page" data-frame="{{ if $minimal }}minimal{{ else }}default{{ end }}">
-  <div id="quartz-body" class="singlePage">
-    <div class="center{{ if $minimal }} minimal{{ end }}">
-      {{- if not $minimal }}
-      <div class="page-header">
-        <div class="popover-hint">
-          {{- with .Title }}<h1 class="article-title">{{ . }}</h1>{{ end }}
-          {{- if not .IsHome }}{{ partial "content-meta.html" . }}{{ end }}
-          {{- with .GetTerms "tags" }}
-          <ul class="tags">
-            {{- range . }}
-            <li><a href="{{ .RelPermalink }}">{{ .LinkTitle | humanize }}</a></li>
-            {{- end }}
-          </ul>
-          {{- end }}
-        </div>
-      </div>
-      {{- end }}
+{{ block "head" . }}
+{{ end }}
 
-      {{ block "main" . }}{{ end }}
-
-      <hr />
-      {{ partial "breadcrumbs.html" . }}
-      <div class="page-footer">{{ block "afterBody" . }}{{ end }}</div>
-    </div>
-
-    {{- if not $minimal }}
-    <div class="right sidebar">
-      {{- if hugo.Data.config.enableFooter }}{{ partial "graph.html" . }}{{ end }}
-      {{ partial "toc.html" . }}
-      {{- if hugo.Data.config.enableFooter }}{{ partial "backlinks.html" . }}{{ end }}
-    </div>
-    {{- end }}
-
-    {{ partial "footer.html" . }}
-  </div>
-
-  {{/* Rendered outside #quartz-body so SPA navigation never swaps it away. */}}
-  {{ partial "nav.html" . }}
-</div>
-{{ partial "search-overlay.html" . }}
+<body>
+{{ block "main" . }}
+{{ end }}
 </body>
 </html>

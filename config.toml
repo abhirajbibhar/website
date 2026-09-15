@@ -9,61 +9,7 @@ ignoreFiles = [
 ]
 summaryLength = 20
 paginate = 10
-enableGitInfo = true
-
-[params]
-    author = "Abhiraj Bibhar"
-    # The dock's right-hand panel hides any entry that is left empty.
-    cv = ""
-    googleScholar = ""
-    orcid = ""
-    github = "https://github.com/jackyzha0/quartz"
-    email = "abhiraj.phd@gmail.com"
-
-# Left-hand drop-up panel of the dock nav. `identifier` selects the icon from
-# layouts/partials/icon.html — home, note, tags, about, research,
-# publications, blog.
-[[menu.main]]
-    name = "Home"
-    url = "/"
-    identifier = "home"
-    weight = 10
-
-[[menu.main]]
-    name = "Notes"
-    url = "/notes/"
-    identifier = "note"
-    weight = 20
-
-[[menu.main]]
-    name = "Tags"
-    url = "/tags/"
-    identifier = "tags"
-    weight = 30
-
-[[menu.main]]
-    name = "About"
-    url = "/about/"
-    identifier = "about"
-    weight = 40
-
-[[menu.main]]
-    name = "Research"
-    url = "/research/"
-    identifier = "research"
-    weight = 50
-
-[[menu.main]]
-    name = "Publications"
-    url = "/publications/"
-    identifier = "publications"
-    weight = 60
-
-[[menu.main]]
-    name = "Blog"
-    url = "/blog/"
-    identifier = "blog"
-    weight = 70
+enableGitInfo = false
 
 [services]
   [services.googleAnalytics]
