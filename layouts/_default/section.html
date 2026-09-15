@@ -1,21 +1,9 @@
-<!DOCTYPE html>
-<html lang="{{ .Lang }}">
-{{ partial "head.html" . }}
-
-<body>
-{{partial "search.html" .}}
-<div class="singlePage">
-    <!-- Begin actual content -->
-    {{partial "header.html" .}}
-    <article>
-        <h1>{{ i18n "all_posts" . }}</h1>
-        {{with .Params.description}}
-            <p>{{.}}</p>
-        {{end}}
-        {{partial "page-list.html" .Paginator.Pages.ByLastmod.Reverse }}
-        {{ template "_internal/pagination.html" .}}
-    </article>
-    {{partial "contact.html" .}}
-</div>
-</body>
-</html>
+{{ define "main" }}
+<article class="popover-hint">
+  <div class="markdown-preview-view markdown-rendered">
+    {{ partial "textprocessing.html" . }}
+    {{ partial "page-list.html" .Paginator.Pages.ByLastmod.Reverse }}
+    {{ template "_internal/pagination.html" . }}
+  </div>
+</article>
+{{ end }}

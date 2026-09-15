@@ -1,12 +1,13 @@
-<h3>{{ i18n "backlinks" }}</h3>
-<ul class="backlinks">
-    {{$url := urls.Parse .Site.BaseURL }}
-    {{$host := strings.TrimRight "/" $url.Path }}
-    {{$curPage := strings.TrimPrefix $host (strings.TrimRight "/" .Page.RelPermalink)}}
-    {{$curPage = cond (eq $curPage "") "/" $curPage}}
-    {{/* Built once per build by layouts/partials/lib/build-index.html — no external tool required */}}
-    {{$idx := partialCached "lib/build-index.html" . "build-index" }}
-    {{$inbound := index $idx.backlinks $curPage}}
+{{$url := urls.Parse .Site.BaseURL }}
+{{$host := strings.TrimRight "/" $url.Path }}
+{{$curPage := strings.TrimPrefix $host (strings.TrimRight "/" .Page.RelPermalink)}}
+{{$curPage = cond (eq $curPage "") "/" $curPage}}
+{{/* Built once per build by layouts/partials/lib/build-index.html — no external tool required */}}
+{{$idx := partialCached "lib/build-index.html" . "build-index" }}
+{{$inbound := index $idx.backlinks $curPage}}
+<div class="backlinks">
+  <h3>{{ i18n "backlinks" }}</h3>
+  <ul class="overflow">
     {{if $inbound}}
     {{$backlinks := dict "SENTINEL" "SENTINEL"}}
     {{range $k, $v := $inbound}}
@@ -28,4 +29,6 @@
       {{ i18n "no_backlinks" }}
     </li>
     {{end}}
-</ul>
+    <li class="overflow-end"></li>
+  </ul>
+</div>

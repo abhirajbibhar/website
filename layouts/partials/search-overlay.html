@@ -1,0 +1,9 @@
+{{/* The search overlay is position: fixed, so it must not live inside the dock
+     bar — backdrop-filter there would make the bar its containing block. */}}
+<div class="search-container" id="search-container">
+  <div class="search-space" id="search-space">
+    <input autocomplete="off" id="search-bar" name="search" type="text" aria-label="{{ i18n "search" }}"
+      placeholder="{{ i18n "search_for_something" }}" dir="{{ $.Site.Language.Direction }}">
+    <div id="results-container"></div>
+  </div>
+</div>

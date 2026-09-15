@@ -1,16 +1,17 @@
-
-
-<hr/>
-
-{{if hugo.Data.config.enableFooter}}
-<div class="page-end" id="footer">
-    <div class="backlinks-container">
-        {{partial "backlinks.html" .}}
-    </div>
-    <div>
-        {{partial "graph.html" .}}
-    </div>
-</div>
-{{end}}
-
-{{partial "contact.html" .}}
+{{- $config := cond (eq $.Site.Language.Lang "en") "config" (printf "config.%s" $.Site.Language.Lang) -}}
+{{- $data := index hugo.Data $config -}}
+{{ if hugo.Data.config.enableFooter }}
+<footer>
+  {{- $name := $data.name | default hugo.Data.config.name -}}
+  {{- $year := dateFormat "2006" now -}}
+  <p>{{ i18n "copyright" (dict "name" $name "year" $year) | safeHTML }}</p>
+  <ul>
+    {{- if not .IsHome }}
+    <li><a href="{{ "" | absLangURL }}">{{ i18n "home" }}</a></li>
+    {{- end }}
+    {{- range $data.links | default hugo.Data.config.links -}}
+    <li><a href="{{.link}}">{{.link_name}}</a></li>
+    {{- end -}}
+  </ul>
+</footer>
+{{ end }}

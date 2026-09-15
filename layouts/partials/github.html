@@ -1,3 +1,3 @@
-{{if hugo.Data.config.enableGitHubEdit}}
+{{if and hugo.Data.config.enableGitHubEdit .File}}
 <a href="{{hugo.Data.config.GitHubLink}}/{{.File.Path}}" rel="noopener">{{ i18n "edit_source" }}</a>
 {{end}}

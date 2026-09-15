@@ -123,23 +123,33 @@ const redir = (id, term) => {
   closeSearch()
 }
 
+// Where focus came from when the overlay opened. Without this, dismissing the
+// search with Escape strands keyboard users on <body>.
+let searchReturnFocus = null
+
 function openSearch() {
   const source = document.getElementById("search-bar")
   const results = document.getElementById("results-container")
   const searchContainer = document.getElementById("search-container")
   if (searchContainer.style.display === "none" || searchContainer.style.display === "") {
+    searchReturnFocus = document.activeElement
     source.value = ""
     results.innerHTML = ""
     searchContainer.style.display = "block"
     source.focus()
   } else {
-    searchContainer.style.display = "none"
+    closeSearch()
   }
 }
 
 function closeSearch() {
   const searchContainer = document.getElementById("search-container")
+  if (searchContainer.style.display !== "block") return
   searchContainer.style.display = "none"
+
+  const back = searchReturnFocus
+  searchReturnFocus = null
+  if (back && back !== document.body && document.contains(back)) back.focus()
 }
 
 const registerHandlers = (onInputFn) => {
@@ -164,13 +174,14 @@ const registerHandlers = (onInputFn) => {
     }
   })
 
+  // A <button> already activates on Enter/Space, so a keydown listener here
+  // would fire openSearch() a second time and immediately toggle it shut.
   const searchButton = document.getElementById("search-icon")
-  searchButton.addEventListener("click", (_) => {
-    openSearch()
-  })
-  searchButton.addEventListener("keydown", (_) => {
-    openSearch()
-  })
+  if (searchButton) {
+    searchButton.addEventListener("click", (_) => {
+      openSearch()
+    })
+  }
   searchContainer.addEventListener("click", (_) => {
     closeSearch()
   })

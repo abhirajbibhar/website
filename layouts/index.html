@@ -1,20 +1,10 @@
-<!DOCTYPE html>
-<html lang="{{ .Lang }}">
-{{ partial "head.html" . }}
-
-<body>
-{{partial "search.html" .}}
-<div class="singlePage">
-    <!-- Begin actual content -->
-    {{partial "header.html" .}}
-    <article>
-        {{partial "toc.html" .}}
-        {{partial "textprocessing.html" . }}
-        {{if hugo.Data.config.enableRecentNotes}}
-          {{partial "recent.html" . }}
-        {{end}}
-    </article>
-    {{partial "footerIndex.html" .}}
-</div>
-</body>
-</html>
+{{ define "main" }}
+<article class="popover-hint">
+  <div class="markdown-preview-view markdown-rendered">
+    {{ partial "textprocessing.html" . }}
+    {{ if hugo.Data.config.enableRecentNotes }}
+    {{ partial "recent.html" . }}
+    {{ end }}
+  </div>
+</article>
+{{ end }}

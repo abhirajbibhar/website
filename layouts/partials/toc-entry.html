@@ -1,0 +1,10 @@
+{{- range .headings -}}
+  {{- if and (ge .Level 2) (le .Level 3) -}}
+    <li class="depth-{{ sub .Level 2 }}">
+      <a href="#{{ .ID }}" data-for="{{ .ID }}">{{ .Title }}</a>
+    </li>
+  {{- end -}}
+  {{- with .Headings -}}
+    {{- partial "toc-entry.html" (dict "headings" .) -}}
+  {{- end -}}
+{{- end -}}

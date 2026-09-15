@@ -1,20 +1,15 @@
 .code-title {
-  color: var(--primary) ;
-  font-family: var(--font-mono);
-  width: max-content;
+  color: var(--darkgray);
+  font-family: var(--codeFont);
+  font-size: 0.9rem;
+  padding: 0.1rem 0.5rem;
+  border: 1px solid var(--lightgray);
+  width: fit-content;
+  max-width: 100%;
   overflow-x: auto;
-  display: inline-block;
-  vertical-align: middle;
-  font-weight: normal;
-  line-height: 1em;
+  border-radius: 5px;
+  margin-bottom: 0.4rem;
   position: relative;
-  padding: 0.5em 0.6em 0.6em;      // + 1.2 em
-  max-width: calc(100% - 1.2em);   // (-1.2 em) fits article width exactly
-  margin-bottom: -0.2em;
-  z-index: -1;
-  border-top-left-radius: 0.3em;
-  border-top-right-radius: 0.3em;
-  font-size: 0.9em;
-  background-color: var(--lightgray);
-  filter: hue-rotate(-30deg) contrast(1.0) opacity(0.8);
+  background-color: var(--light);
+  line-height: 1.4em;
 }

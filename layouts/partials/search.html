@@ -1,18 +1,19 @@
-<div id="search-container">
-  <div id="search-space">
-    <input autocomplete="off" id="search-bar" name="search" type="text" aria-label="{{ i18n "search" }}"
-      placeholder="{{ i18n "search_for_something" }}" dir="{{ $.Site.Language.Direction }}">
-    <div id="results-container">
-    </div>
-  </div>
-</div>
+{{/* Row inside the dock's menu panel. util.js binds #search-icon to open the
+     overlay rendered by search-overlay.html, and Ctrl/Cmd+K does the same. */}}
+<button class="panel-item" id="search-icon" type="button"
+  aria-keyshortcuts="Control+K Meta+K">
+  {{ partial "icon.html" "search" }}
+  <span>{{ i18n "search" }}</span>
+  {{/* nav.js swaps this for ⌘K on Apple hardware; the markup keeps a sane
+       label when JS is off. */}}
+  <kbd class="kbd-hint" data-keyshortcut aria-hidden="true">Ctrl K</kbd>
+</button>
 {{if hugo.Data.config.enableSemanticSearch}}
 {{ $js := resources.Get "js/semantic-search.js" | resources.ExecuteAsTemplate "js/semantic-search.js" . | resources.Fingerprint "md5" | resources.Minify }}
-<script defer src="{{ $js.Permalink }}"></script>
+<script defer src="{{ $js.RelPermalink }}"></script>
 {{else}}
 <script src="https://cdn.jsdelivr.net/npm/flexsearch@0.7.21/dist/flexsearch.bundle.js"
   integrity="sha256-i3A0NZGkhsKjVMzFxv3ksk0DZh3aXqu0l49Bbh0MdjE=" crossorigin="anonymous" defer></script>
 {{ $js := resources.Get "js/full-text-search.js" | resources.Fingerprint "md5" | resources.Minify }}
-<script defer src="{{ $js.Permalink }}"></script>
+<script defer src="{{ $js.RelPermalink }}"></script>
 {{end}}
-

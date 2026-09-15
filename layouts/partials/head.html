@@ -13,6 +13,7 @@
     end }}
   </title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="generator" content="Hugo" />
 
   <!-- HTML Favicon -->
   {{ $favicon := $data.favicon  | default hugo.Data.config.favicon | default (slice (dict "rel" "shortcut icon" "type" "image/png" "href" "icon.png")) }}
@@ -25,7 +26,21 @@
   {{- end }}
   {{ end }}
 
-  <!-- CSS Stylesheets and Fonts -->
+  <!-- Fonts -->
+  <link rel="preload" as="font" type="font/woff" crossorigin
+    href="{{ "et-book/et-book-roman-old-style-figures/et-book-roman-old-style-figures.woff" | relURL }}" />
+  <link rel="preload" as="font" type="font/woff" crossorigin
+    href="{{ "et-book/et-book-display-italic-old-style-figures/et-book-display-italic-old-style-figures.woff" | relURL }}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap" />
+
+  <!-- Syntax highlighting theme (swapped by js/darkmode.js) -->
+  {{$lightSyntax := resources.Get "styles/_light_syntax.scss" | css.Sass (dict "outputStyle" "compressed") | resources.Fingerprint "md5" | resources.Minify  }}
+  <link href="{{$lightSyntax.RelPermalink}}" rel="stylesheet" id="theme-link">
+
+  <!-- CSS Stylesheets -->
   {{$sass := resources.Match "styles/[!_]*.scss" }}
   {{$css := slice }}
   {{range $sass}}
@@ -37,39 +52,45 @@
     {{$css = $css | append $scss}}
   {{end}}
   {{$finalCss := $css | resources.Concat "styles.css" | resources.Fingerprint "md5" | resources.Minify  }}
-  <link href="{{$finalCss.Permalink}}" rel="stylesheet" />
-
-  {{$lightSyntax := resources.Get "styles/_light_syntax.scss" | css.Sass (dict "outputStyle" "compressed") | resources.Fingerprint "md5" | resources.Minify  }}
-  <link href="{{$lightSyntax.Permalink}}" rel="stylesheet" id="theme-link">
+  <link href="{{$finalCss.RelPermalink}}" rel="stylesheet" />
 
    <!-- Base scripts -->
-  {{$scripts := (slice "js/darkmode.js" "js/util.js")}}
+  {{$scripts := (slice "js/darkmode.js" "js/util.js" "js/ui.js" "js/nav.js")}}
   {{range $scripts}}
   {{$scriptname := .}}
   {{ $s := resources.Get $scriptname | resources.ExecuteAsTemplate $scriptname . | resources.Fingerprint "md5" | resources.Minify }}
-  <script src="{{$s.Permalink}}"></script>
+  <script src="{{$s.RelPermalink}}"></script>
   {{end}}
   {{partial "katex.html" .}}
-    
+
   <script src="https://unpkg.com/@floating-ui/core@0.7.3"></script>
   <script src="https://unpkg.com/@floating-ui/dom@0.5.4"></script>
   {{ $popover := resources.Get "js/popover.js" | resources.Fingerprint "md5" | resources.Minify }}
-  <script src="{{$popover.Permalink}}"></script>
+  <script src="{{$popover.RelPermalink}}"></script>
 
   <!-- Optional scripts -->
   {{ if $data.enableCodeBlockTitle | default hugo.Data.config.enableCodeBlockTitle }}
   {{ $codeTitle := resources.Get "js/code-title.js" | resources.Fingerprint "md5" | resources.Minify }}
-  <script src="{{$codeTitle.Permalink}}"></script>
+  <script src="{{$codeTitle.RelPermalink}}"></script>
   {{end}}
 
   {{ if $data.enableCodeBlockCopy | default hugo.Data.config.enableCodeBlockCopy }}
   {{ $clipboard := resources.Get "js/clipboard.js" | resources.Fingerprint "md5" | resources.Minify }}
-  <script src="{{$clipboard.Permalink}}"></script>
+  <script src="{{$clipboard.RelPermalink}}"></script>
   {{ end }}
 
   {{ if $data.enableCallouts | default hugo.Data.config.enableCallouts }}
   {{ $callouts := resources.Get "js/callouts.js" | resources.Fingerprint "md5" | resources.Minify }}
-  <script src="{{$callouts.Permalink}}"></script>
+  <script src="{{$callouts.RelPermalink}}"></script>
+  {{ end }}
+
+  {{/* Loaded globally so the graph still works after SPA navigating from a
+       list page (which renders no graph of its own). */}}
+  {{ if $data.enableFooter | default hugo.Data.config.enableFooter }}
+  <script src="https://cdn.jsdelivr.net/npm/d3@6.7.0/dist/d3.min.js"
+    integrity="sha256-+7jaYCp29O1JusNWHaYtgUn6EhuP0VaFuswhNV06MyI=" crossorigin="anonymous"></script>
+  {{ $graph := resources.Get "js/graph.js" | resources.Fingerprint "md5" }}
+  <script src="{{$graph.RelPermalink}}"></script>
   {{ end }}
 
   <!--  Preload page vars  -->
@@ -82,13 +103,13 @@
   <script>
     const BASE_URL = {{.Site.BaseURL}}
     const fetchData = Promise.all([
-          fetch("{{ $linkIndex.Permalink }}")
+          fetch("{{ $linkIndex.RelPermalink }}")
             .then(data => data.json())
             .then(data => ({
               index: data.index,
               links: data.links,
             })),
-          fetch("{{ $contentIndex.Permalink }}")
+          fetch("{{ $contentIndex.RelPermalink }}")
             .then(data => data.json()),
         ])
         .then(([{index, links}, content]) => ({
@@ -97,26 +118,46 @@
           content,
         }))
 
+      {{if $data.enableFooter | default hugo.Data.config.enableFooter}}
+      // Kept separate from render() so it can also be re-run when the sidebar's
+      // box changes size without a navigation (reader mode toggling).
+      const renderGraph = () => {
+        const container = document.getElementById("graph-container")
+        if (!container || typeof drawGraph !== "function") return
+
+        // clear the graph in case there is anything within it
+        container.textContent = ""
+
+        const pathBase = new URL(BASE_URL).pathname;
+        const drawGlobal = pathBase == window.location.pathname && {{hugo.Data.graphConfig.enableGlobalGraph}};
+        drawGraph(
+            {{strings.TrimRight "/" .Site.BaseURL}},
+            drawGlobal,
+            {{hugo.Data.graphConfig.paths}},
+            drawGlobal ? {{hugo.Data.graphConfig.globalGraph}} : {{hugo.Data.graphConfig.localGraph}}
+          );
+      }
+      window.renderGraph = renderGraph
+      {{end}}
+
       const render = () => {
       // NOTE: everything within this callback will be executed for every page navigation. This is a good place to put JavaScript that loads or modifies data on the page, adds event listeners, etc. If you are only dealing with basic DOM replacement, use the init function
 
-      const siteBaseURL = new URL(BASE_URL);
-      const pathBase = siteBaseURL.pathname;
-      const pathWindow = window.location.pathname;
-      const isHome = pathBase == pathWindow;
+      // re-initialise the sidebar widgets against the freshly swapped DOM
+      initUI();
 
       {{if $data.enableCodeBlockCopy | default hugo.Data.config.enableCodeBlockCopy -}}
       addCopyButtons();
       {{ end }}
 
-      {{if $data.enableSPA | default hugo.Data.config.enableSPA -}}
+      {{if $data.enableCodeBlockTitle | default hugo.Data.config.enableCodeBlockTitle -}}
       addTitleToCodeBlocks();
       {{ end }}
 
       {{if $data.enableCallouts | default hugo.Data.config.enableCallouts -}}
       addCollapsibleCallouts();
       {{ end }}
-     
+
       {{if $data.enableLinkPreview | default hugo.Data.config.enableLinkPreview}}
       initPopover(
         {{strings.TrimRight "/" .Site.BaseURL }},
@@ -126,28 +167,14 @@
       {{end}}
 
       {{if $data.enableFooter | default hugo.Data.config.enableFooter}}
-      const footer = document.getElementById("footer")
-      if (footer) {
-        const container = document.getElementById("graph-container")
-        // retry if the graph is not ready
-        if (!container) return requestAnimationFrame(render)
-        // clear the graph in case there is anything within it
-        container.textContent = ""
-
-        const drawGlobal = isHome && {{hugo.Data.graphConfig.enableGlobalGraph}};
-        drawGraph(
-            {{strings.TrimRight "/" .Site.BaseURL}},
-            drawGlobal,
-            {{hugo.Data.graphConfig.paths}},
-            drawGlobal ? {{hugo.Data.graphConfig.globalGraph}} : {{hugo.Data.graphConfig.localGraph}}
-          );
-
-        }
+      renderGraph()
       {{end}}
     }
 
     const init = (doc = document) => {
       // NOTE: everything within this callback will be executed for initial page navigation. This is a good place to put JavaScript that only replaces DOM nodes.
+      initUI();
+
       {{if $data.enableCodeBlockCopy | default hugo.Data.config.enableCodeBlockCopy -}}
       addCopyButtons();
       {{ end }}
@@ -169,7 +196,7 @@
   {{if $data.enableSPA | default hugo.Data.config.enableSPA}}
   {{ $router := resources.Get "js/router.js" | resources.Fingerprint "md5" | resources.Minify }}
   <script type="module">
-    import { attachSPARouting } from "{{$router.Permalink}}"
+    import { attachSPARouting } from "{{$router.RelPermalink}}"
     attachSPARouting(init, render)
   </script>
   {{else}}

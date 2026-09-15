@@ -37,6 +37,24 @@ other = "Dark Mode"
 [edit_source]
 other = "Edit Source"
 
+[graph]
+other = "Graph"
+
+[reader_mode]
+other = "Reader Mode"
+
+[primary_nav]
+other = "Primary"
+
+[menu]
+other = "Menu"
+
+[account]
+other = "Account and settings"
+
+[min_read]
+other = "min read"
+
 [interactive_graph]
 other = "Interactive Graph"
 

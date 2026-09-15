@@ -1,0 +1,22 @@
+{{- $date := "" -}}
+{{- with .Date -}}
+  {{- $date = .Format "Jan 2, 2006" -}}
+{{- else -}}
+  {{- with .Lastmod -}}{{- $date = .Format "Jan 2, 2006" -}}{{- end -}}
+{{- end -}}
+{{- $readingTime := div (add .WordCount 199) 200 -}}
+{{- if lt $readingTime 1 -}}{{- $readingTime = 1 -}}{{- end -}}
+{{- $showEdit := and hugo.Data.config.enableGitHubEdit .File -}}
+{{- if or $date .IsPage $showEdit -}}
+<p class="content-meta" show-comma="true">
+  {{- if $date -}}
+  <span>{{ i18n "last_updated" }} {{ $date }}</span>
+  {{- end -}}
+  {{- if .IsPage -}}
+  <span>{{ $readingTime }} {{ i18n "min_read" }}</span>
+  {{- end -}}
+  {{- if $showEdit -}}
+  <span>{{ partial "github.html" . }}</span>
+  {{- end -}}
+</p>
+{{- end -}}
