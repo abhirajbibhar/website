@@ -1,0 +1,26 @@
+// Ocean Blue Theme
+// Copy the :root and [saved-theme="dark"] blocks into custom.scss to use
+
+:root {
+  --light: #f8fafc;
+  --dark: #0f172a;
+  --secondary: #0369a1;
+  --tertiary: #0ea5e9;
+  --visited: #7dd3fc;
+  --primary: #2563eb;
+  --gray: #475569;
+  --lightgray: #f1f5f9;
+  --outlinegray: #cbd5e1;
+}
+
+[saved-theme="dark"] {
+  --light: #1e293b !important;
+  --dark: #e2e8f0 !important;
+  --secondary: #38bdf8 !important;
+  --visited: #4a8ab5 !important;
+  --tertiary: #7dd3fc !important;
+  --primary: #60a5fa !important;
+  --gray: #94a3b8 !important;
+  --lightgray: #1a2332 !important;
+  --outlinegray: #334155 !important;
+}

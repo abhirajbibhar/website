@@ -69,4 +69,44 @@
   --switch-knob: var(--light) !important;
 }
 
+span {
+  &.caps {
+    font-variant: small-caps;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: var(--dark);
+  }
+}
+ 
+hr.footnotes-sep,
+.footnotes > hr {
+  width: 15%;
+  margin: 1.5em 0;
+  height: 1px;
+  background-color: var(--gray);
+  border: none;
+}
 
+.epigraph {
+  margin: 2em 0 2em 2em;
+  > blockquote {
+    margin-top: 1em;
+    margin-bottom: 1em;
+    border-left: 0;
+    padding-left: 0;
+    font-size: 1.1em;
+    &,
+    > p {
+      font-style: italic;
+    }
+    > footer {
+      font-style: normal;
+      margin-top: 0.25em;
+      text-align: right;
+      color: var(--dark);
+      > cite {
+        font-style: italic;
+      }
+    }
+  }
+}

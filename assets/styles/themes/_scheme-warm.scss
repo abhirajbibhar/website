@@ -1,0 +1,26 @@
+// Warm Cream / Sepia Theme
+// Copy the :root and [saved-theme="dark"] blocks into custom.scss to use
+
+:root {
+  --light: #fffff8;
+  --dark: #111111;
+  --secondary: #5a3e28;
+  --tertiary: #a0845c;
+  --visited: #8a7a6a;
+  --primary: #c96442;
+  --gray: #555555;
+  --lightgray: #f5f0e8;
+  --outlinegray: #d5cfc0;
+}
+
+[saved-theme="dark"] {
+  --light: #151515 !important;
+  --dark: #dddddd !important;
+  --secondary: #a08a6a !important;
+  --visited: #7a6a5a !important;
+  --tertiary: #b09a7a !important;
+  --primary: #d07850 !important;
+  --gray: #c0c0c0 !important;
+  --lightgray: #222222 !important;
+  --outlinegray: #3a3a3a !important;
+}

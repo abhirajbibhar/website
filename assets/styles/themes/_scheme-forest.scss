@@ -1,0 +1,26 @@
+// Forest Green Theme
+// Copy the :root and [saved-theme="dark"] blocks into custom.scss to use
+
+:root {
+  --light: #f6faf6;
+  --dark: #1a2e1a;
+  --secondary: #2d6a4f;
+  --tertiary: #52b788;
+  --visited: #95d5b2;
+  --primary: #40916c;
+  --gray: #4a5a4a;
+  --lightgray: #edf5ed;
+  --outlinegray: #c8dbc8;
+}
+
+[saved-theme="dark"] {
+  --light: #1a241a !important;
+  --dark: #d8e8d8 !important;
+  --secondary: #74c69d !important;
+  --visited: #5a8a6a !important;
+  --tertiary: #95d5b2 !important;
+  --primary: #52b788 !important;
+  --gray: #b0c8b0 !important;
+  --lightgray: #1e2a1e !important;
+  --outlinegray: #2d3d2d !important;
+}

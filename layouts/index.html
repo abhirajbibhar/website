@@ -15,7 +15,6 @@
             <p class="subtitle">{{ . }}</p>
             {{- end -}}
         </header>
-        {{partial "toc.html" .}}
         {{partial "textprocessing.html" . }}
         {{if hugo.Data.config.enableRecentNotes}}
           {{partial "recent.html" . }}

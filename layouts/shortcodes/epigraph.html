@@ -1,0 +1,8 @@
+<div class="epigraph">
+  <blockquote>
+    <p>{{ .Page.RenderString (dict "display" "inline") .Inner }}</p>
+    {{ with .Get "attribution" }}
+    <footer><cite>{{ $.Page.RenderString (dict "display" "inline") . }}</cite></footer>
+    {{ end }}
+  </blockquote>
+</div>
