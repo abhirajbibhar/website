@@ -1,0 +1,5 @@
+{
+  "name": "d3-subset-build",
+  "private": true,
+  "description": "Scratch toolchain for regenerating assets/vendor/d3-subset.min.js. Not part of the site build."
+}

@@ -154,7 +154,10 @@ const registerHandlers = (onInputFn) => {
   })
   source.addEventListener("input", onInputFn)
   document.addEventListener("keydown", (event) => {
-    if (event.key === "k" && (event.ctrlKey || event.metaKey)) {
+    // Ctrl/⌘ + "/" to search. Ctrl+K is left alone because the browser claims it
+    // (Chrome focuses its own search/address bar). Matching on code as well as key
+    // keeps the shortcut working on layouts where "/" sits behind a modifier.
+    if ((event.key === "/" || event.code === "Slash") && (event.ctrlKey || event.metaKey)) {
       event.preventDefault()
       openSearch()
     }
@@ -168,9 +171,11 @@ const registerHandlers = (onInputFn) => {
   searchButton.addEventListener("click", (_) => {
     openSearch()
   })
-  searchButton.addEventListener("keydown", (_) => {
-    openSearch()
-  })
+  // No keydown handler here on purpose. #search-icon is a real <button>, so Enter and
+  // Space already activate it through the click listener above — and a catch-all
+  // keydown used to fire on *any* key, so typing a letter or pressing Escape while the
+  // dock row had focus opened the search overlay instead of reaching the dock, which
+  // also defeated the dock's "Escape returns focus to the trigger" behaviour.
   searchContainer.addEventListener("click", (_) => {
     closeSearch()
   })

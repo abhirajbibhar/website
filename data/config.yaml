@@ -2,7 +2,7 @@ name: Abhiraj Bibhar
 enableToc: true
 openToc: false
 enableLinkPreview: true
-enableLatex: true
+enableLatex: false
 enableCodeBlockTitle: true
 enableCodeBlockCopy: true
 enableCallouts: true

@@ -1,0 +1,87 @@
+{{- /*
+  Central registry for the self-hosted third-party assets in assets/vendor/.
+
+  That directory is deliberately flat — one file per dependency, no package or version
+  subdirectories. The versions live in the comments below and in README.md; the
+  published URLs are fingerprinted, so a changed file can never be served stale from
+  a cache (Cloudflare Pages marks `/*.js` and `/*.css` immutable for a year).
+
+  Consumers never hardcode a path: they call `partialCached "lib/vendor.html" .` and use
+  the returned map (see graph.html, katex.html, search.html and head.html). To upgrade a
+  package, replace the file and update its path below — nothing else changes.
+*/ -}}
+
+{{- /* d3 6.7.0 — draws the local/global graph in the footer page-end. This is a locally
+       built subset, not upstream's full bundle: full d3 is 270 KB raw / 88 KB gzipped,
+       but assets/js/graph.js only uses selection, transition, drag, zoom and force,
+       which comes to 62 KB raw / 21 KB gzipped. Regeneration recipe and equivalence
+       test: tools/d3-subset/ (add a module there if graph.js grows a new d3 call). */ -}}
+{{ $d3 := resources.Get "vendor/d3-subset.min.js" | resources.Fingerprint "md5" }}
+
+{{- /* floating-ui 0.7.3 (core) + 0.5.4 (dom) — link preview popovers. The DOM bundle
+       reads the `FloatingUICore` global from the core bundle, so core must come first;
+       they are never used separately, so concatenate them into one request. */ -}}
+{{ $floatingUI := slice
+    (resources.Get "vendor/floating-ui.core.umd.min.js")
+    (resources.Get "vendor/floating-ui.dom.umd.min.js")
+  | resources.Concat "vendor/floating-ui.umd.js"
+  | resources.Fingerprint "md5" }}
+
+{{- /* flexsearch 0.7.21 — full-text search. Pinned to the 0.7 API, which
+       assets/js/full-text-search.js is written against (0.8 changed the options). */ -}}
+{{ $flexsearch := resources.Get "vendor/flexsearch.bundle.js"
+  | resources.Fingerprint "md5" }}
+
+{{- /* katex 0.15.1 + auto-render — this site writes no math, so enableLatex is false and
+       the files are not vendored at all; flipping the flag needs them re-downloaded first
+       (see README.md — "Restoring katex"). Resolved only when the flag is on: 0.15 MB of
+       JS plus 0.3 MB of fonts that a math-free site should never ship. Always loaded
+       together (auto-render provides renderMathInElement), so concatenate them into one
+       request.
+
+       Note this is the one dependency whose files cannot sit directly in vendor/:
+       katex.min.css reaches its fonts with relative url(fonts/…), so they go in
+       vendor/fonts/. */ -}}
+{{ $katex := "" }}
+{{ $katexCSS := "" }}
+{{ if hugo.Data.config.enableLatex }}
+  {{ if not (resources.Get "vendor/katex.min.js") }}
+    {{- /* Fail with only this message: falling through would end in an opaque
+           "resources.Concat: expected slice of Resource objects" error instead. */ -}}
+    {{ errorf "enableLatex is on, but the katex files are not vendored. Re-download them into assets/vendor/ first — see README.md, 'Restoring katex'." }}
+  {{ else }}
+    {{ $katex = slice
+        (resources.Get "vendor/katex.min.js")
+        (resources.Get "vendor/auto-render.min.js")
+      | resources.Concat "vendor/katex.umd.js"
+      | resources.Fingerprint "md5" }}
+    {{ $katexCSS = resources.Get "vendor/katex.min.css" | resources.Fingerprint "md5" }}
+    {{- /* Only the stylesheet's file name is fingerprinted, not its directory, so its
+           relative url(fonts/…) keeps resolving. The fonts are referenced nowhere else,
+           and reading RelPermalink is what publishes them. */ -}}
+    {{ range resources.Match "vendor/fonts/*.woff2" }}{{ $publish := .RelPermalink }}{{ end }}
+  {{ end }}
+{{ end }}
+
+{{- /* million 1.11.5 router — an ES module whose chunks import each other by relative
+       path, so those imports are rewritten to the fingerprinted URLs. Order matters:
+       million-morph.mjs imports million-render.mjs, and million-router.mjs imports both,
+       so each one is built after the files it depends on. */ -}}
+{{ $render := resources.Get "vendor/million-render.mjs" | resources.Fingerprint "md5" }}
+{{ $morph := resources.FromString "vendor/million-morph.mjs"
+    (replace (resources.Get "vendor/million-morph.mjs").Content
+      "./render.mjs" $render.RelPermalink)
+  | resources.Fingerprint "md5" }}
+{{ $router := resources.FromString "vendor/million-router.mjs"
+    (replace (replace (resources.Get "vendor/million-router.mjs").Content
+      "./chunks/render.mjs" $render.RelPermalink)
+      "./chunks/morph.mjs" $morph.RelPermalink)
+  | resources.Fingerprint "md5" }}
+
+{{ return dict
+  "d3" $d3
+  "floatingUI" $floatingUI
+  "flexsearch" $flexsearch
+  "katex" $katex
+  "katexCSS" $katexCSS
+  "millionRouter" $router }}

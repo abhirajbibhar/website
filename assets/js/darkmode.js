@@ -8,13 +8,13 @@ const syntaxTheme = document.querySelector("#theme-link");
 
 if (currentTheme) {
   document.documentElement.setAttribute('saved-theme', currentTheme);
-  syntaxTheme.href = currentTheme === 'dark' ?  '{{ $darkSyntax.Permalink }}' :  '{{ $lightSyntax.Permalink }}';
+  syntaxTheme.href = currentTheme === 'dark' ?  '{{ $darkSyntax.RelPermalink }}' :  '{{ $lightSyntax.RelPermalink }}';
 }
 
 const applyTheme = (theme) => {
   document.documentElement.setAttribute('saved-theme', theme);
   localStorage.setItem('theme', theme);
-  syntaxTheme.href = theme === 'dark' ? '{{ $darkSyntax.Permalink }}' : '{{ $lightSyntax.Permalink }}';
+  syntaxTheme.href = theme === 'dark' ? '{{ $darkSyntax.RelPermalink }}' : '{{ $lightSyntax.RelPermalink }}';
 
   // Sync the new switch toggle (nav bar)
   const switchEl = document.querySelector('#theme-toggle');

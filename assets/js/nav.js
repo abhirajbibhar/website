@@ -1,9 +1,11 @@
 // ============================================================================
 // Drop-up dock navigation
 // ----------------------------------------------------------------------------
-// Loaded from <head> without `defer`, so binding has to wait for the body.
-// The dock is rendered outside the SPA container (#quartz-body), so it is never
-// replaced and these listeners only need binding once.
+// Loaded from <head> with `defer` (fingerprinted via assets/js/nav.js, so the URL
+// changes whenever this file does — the old static copy could be cached for a year).
+// The readyState guard at the bottom also covers an immediate load. The dock is
+// rendered outside the SPA container (#quartz-body), so it is never replaced and
+// these listeners only need binding once.
 //
 // The panels are a disclosure pattern (trigger + panel), not role="menu", so
 // focus is never trapped: Tab walks rows normally, the arrow keys are a
@@ -16,14 +18,15 @@
     return Array.prototype.slice.call(panel.querySelectorAll(ROW_SELECTOR));
   }
 
-  // Shortcut hint on the search row: ⌘K on Apple hardware, Ctrl K elsewhere.
+  // Shortcut hint on the drop-up panel's search row: ⌘/ on Apple hardware, Ctrl /
+  // elsewhere. Must stay in sync with the handler in assets/js/util.js.
   function labelShortcutHints() {
     var platform =
       (navigator.userAgentData && navigator.userAgentData.platform) ||
       navigator.platform ||
       navigator.userAgent ||
       "";
-    var label = /Mac|iPhone|iPad|iPod/i.test(platform) ? "\u2318K" : "Ctrl K";
+    var label = /Mac|iPhone|iPad|iPod/i.test(platform) ? "\u2318/" : "Ctrl /";
     Array.prototype.forEach.call(document.querySelectorAll("[data-keyshortcut]"), function (el) {
       el.textContent = label;
     });

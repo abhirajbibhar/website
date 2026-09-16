@@ -3,7 +3,7 @@ import {
   navigate,
   prefetch,
   router,
-} from "https://unpkg.com/million@1.11.5/dist/router.mjs"
+} from "{{ .millionRouter }}"
 
 export const attachSPARouting = (init, rerender) => {
   // Attach SPA functions to the global Million namespace

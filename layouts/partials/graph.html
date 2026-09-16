@@ -1,8 +1,5 @@
-<script defer
-  src="https://cdn.jsdelivr.net/npm/d3@6.7.0/dist/d3.min.js"
-  integrity="sha256-+7jaYCp29O1JusNWHaYtgUn6EhuP0VaFuswhNV06MyI="
-  crossorigin="anonymous"
-></script>
+{{ $vendor := partialCached "lib/vendor.html" . }}
+<script defer src="{{ $vendor.d3.RelPermalink }}"></script>
 <h3>{{ i18n "interactive_graph" }}</h3>
 <div id="graph-container"></div>
 <style>
@@ -15,4 +12,4 @@
   }
 </style>
 {{ $js := resources.Get "js/graph.js" | resources.Fingerprint "md5" }}
-<script defer src="{{ $js.Permalink }}"></script>
+<script defer src="{{ $js.RelPermalink }}"></script>

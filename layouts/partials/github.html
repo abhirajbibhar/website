@@ -1,3 +1,7 @@
 {{if hugo.Data.config.enableGitHubEdit}}
-<a href="{{hugo.Data.config.GitHubLink}}/{{.File.Path}}" rel="noopener">{{ i18n "edit_source" }}</a>
+{{/* .File.Path uses the OS separator, so on Windows it would produce "notes\file.md"
+     and the edit link would end up as content/notes%5Cfile.md. Normalise to forward
+     slashes before handing it to GitHub. */}}
+{{ $srcPath := replace .File.Path "\\" "/" }}
+<a href="{{hugo.Data.config.GitHubLink}}/{{$srcPath}}" rel="noopener">{{ i18n "edit_source" }}</a>
 {{end}}

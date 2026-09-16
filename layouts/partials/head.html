@@ -1,6 +1,7 @@
 <!-- set data/config yaml file based on website language -->
 {{ $config := cond (eq $.Site.Language.Lang "en") "config" (printf "config.%s" $.Site.Language.Lang) }}
 {{ $data := index hugo.Data $config }}
+{{ $vendor := partialCached "lib/vendor.html" . }}
 <head>
   <meta charset="UTF-8" />
   <meta name="description"
@@ -17,7 +18,7 @@
   {{ $favicon | safeHTML }}
   {{ else }}
   {{ range $favicon }}
-  <link rel="{{.rel}}" {{if .type}}type="{{.type}}"{{end}} {{if .sizes}}sizes="{{.sizes}}"{{end}} href="{{$.Site.BaseURL}}/{{.href}}" />
+  <link rel="{{.rel}}" {{if .type}}type="{{.type}}"{{end}} {{if .sizes}}sizes="{{.sizes}}"{{end}} href="{{.href | relURL}}" />
   {{- end }}
   {{ end }}
 
@@ -37,47 +38,47 @@
     {{$css = $css | append $scss}}
   {{end}}
   {{$finalCss := $css | resources.Concat "styles.css" | resources.Fingerprint "md5" | resources.Minify }}
-  <link href="{{$finalCss.Permalink}}" rel="stylesheet" />
+  <link href="{{$finalCss.RelPermalink}}" rel="stylesheet" />
 
   {{$lightSyntax := resources.Get "styles/_light_syntax.scss" | css.Sass (dict "outputStyle" "compressed") | resources.Fingerprint "md5" | resources.Minify }}
-  <link href="{{$lightSyntax.Permalink}}" rel="stylesheet" id="theme-link">
+  <link href="{{$lightSyntax.RelPermalink}}" rel="stylesheet" id="theme-link">
 
   <!-- All scripts deferred — nothing blocks rendering -->
   {{$scripts := (slice "js/darkmode.js" "js/util.js")}}
   {{range $scripts}}
   {{$scriptname := .}}
   {{ $s := resources.Get $scriptname | resources.ExecuteAsTemplate $scriptname . | resources.Fingerprint "md5" | resources.Minify }}
-  <script defer src="{{$s.Permalink}}"></script>
+  <script defer src="{{$s.RelPermalink}}"></script>
   {{end}}
 
   <!-- KaTeX deferred -->
   {{partial "katex.html" .}}
 
-  <!-- Nav bar script deferred -->
-  <script defer src="{{ "nav.js" | relURL }}"></script>
+  <!-- Nav bar (drop-up dock) script deferred -->
+  {{ $nav := resources.Get "js/nav.js" | resources.Fingerprint "md5" | resources.Minify }}
+  <script defer src="{{ $nav.RelPermalink }}"></script>
 
-  <!-- Floating UI deferred -->
-  <script defer src="https://unpkg.com/@floating-ui/core@0.7.3"></script>
-  <script defer src="https://unpkg.com/@floating-ui/dom@0.5.4"></script>
+  <!-- Floating UI deferred (self-hosted; core first, then dom — never used apart) -->
+  <script defer src="{{ $vendor.floatingUI.RelPermalink }}"></script>
 
   <!-- Popover deferred -->
   {{ $popover := resources.Get "js/popover.js" | resources.Fingerprint "md5" | resources.Minify }}
-  <script defer src="{{$popover.Permalink}}"></script>
+  <script defer src="{{$popover.RelPermalink}}"></script>
 
   <!-- Optional scripts deferred -->
   {{ if $data.enableCodeBlockTitle | default hugo.Data.config.enableCodeBlockTitle }}
   {{ $codeTitle := resources.Get "js/code-title.js" | resources.Fingerprint "md5" | resources.Minify }}
-  <script defer src="{{$codeTitle.Permalink}}"></script>
+  <script defer src="{{$codeTitle.RelPermalink}}"></script>
   {{end}}
 
   {{ if $data.enableCodeBlockCopy | default hugo.Data.config.enableCodeBlockCopy }}
   {{ $clipboard := resources.Get "js/clipboard.js" | resources.Fingerprint "md5" | resources.Minify }}
-  <script defer src="{{$clipboard.Permalink}}"></script>
+  <script defer src="{{$clipboard.RelPermalink}}"></script>
   {{ end }}
 
   {{ if $data.enableCallouts | default hugo.Data.config.enableCallouts }}
   {{ $callouts := resources.Get "js/callouts.js" | resources.Fingerprint "md5" | resources.Minify }}
-  <script defer src="{{$callouts.Permalink}}"></script>
+  <script defer src="{{$callouts.RelPermalink}}"></script>
   {{ end }}
 
   <!-- Preload page vars -->
@@ -87,15 +88,20 @@
   {{$linkIndex := resources.FromString "indices/linkIndex.json" $linkIndexJSON | resources.Fingerprint "md5" | resources.Minify }}
   {{$contentIndex := resources.FromString "indices/contentIndex.json" $contentIndexJSON | resources.Fingerprint "md5" | resources.Minify }}
   <script defer>
-    const BASE_URL = {{.Site.BaseURL}}
+    // Built from the current origin rather than the configured baseURL, so the graph,
+    // popover lookups and SPA navigation follow whatever host serves the page:
+    // localhost, a LAN address, or a Cloudflare preview deployment.
+    const SITE_PATH = new URL({{.Site.BaseURL}}).pathname
+    const BASE_URL = window.location.origin + SITE_PATH
+    const BASE = BASE_URL.replace(/\/$/, "")
     const fetchData = Promise.all([
-          fetch("{{ $linkIndex.Permalink }}")
+          fetch("{{ $linkIndex.RelPermalink }}")
             .then(data => data.json())
             .then(data => ({
               index: data.index,
               links: data.links,
             })),
-          fetch("{{ $contentIndex.Permalink }}")
+          fetch("{{ $contentIndex.RelPermalink }}")
             .then(data => data.json()),
         ])
         .then(([{index, links}, content]) => ({
@@ -124,7 +130,7 @@
 
       {{if $data.enableLinkPreview | default hugo.Data.config.enableLinkPreview}}
       initPopover(
-        {{strings.TrimRight "/" .Site.BaseURL }},
+        BASE,
         {{$data.enableContextualBacklinks | default hugo.Data.config.enableContextualBacklinks}},
         {{$data.enableLatex | default hugo.Data.config.enableLatex}}
       )
@@ -139,7 +145,7 @@
 
         const drawGlobal = isHome && {{hugo.Data.graphConfig.enableGlobalGraph}};
         drawGraph(
-            {{strings.TrimRight "/" .Site.BaseURL}},
+            BASE,
             drawGlobal,
             {{hugo.Data.graphConfig.paths}},
             drawGlobal ? {{hugo.Data.graphConfig.globalGraph}} : {{hugo.Data.graphConfig.localGraph}}
@@ -169,9 +175,9 @@
     };
   </script>
   {{if $data.enableSPA | default hugo.Data.config.enableSPA}}
-  {{ $router := resources.Get "js/router.js" | resources.Fingerprint "md5" | resources.Minify }}
+  {{ $router := resources.Get "js/router.js" | resources.ExecuteAsTemplate "js/router.js" (dict "millionRouter" $vendor.millionRouter.RelPermalink) | resources.Fingerprint "md5" | resources.Minify }}
   <script type="module">
-    import { attachSPARouting } from "{{$router.Permalink}}"
+    import { attachSPARouting } from "{{$router.RelPermalink}}"
     attachSPARouting(init, render)
   </script>
   {{else}}
