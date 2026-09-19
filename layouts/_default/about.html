@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="{{ .Lang }}">
+{{ partial "head.html" . }}
+
+<body>
+{{partial "nav.html" .}}
+<div class="singlePage">
+    {{- $config := cond (eq $.Site.Language.Lang "en") "config" (printf "config.%s" $.Site.Language.Lang) -}}
+    {{- $data := index hugo.Data $config -}}
+
+    <main>
+    <header class="about-hero">
+      <div class="about-hero-portrait">
+        <div class="about-hero-frame">
+          <img src="{{ "img/abhiraj-profile-100kb.jpeg" | relURL }}" alt="{{ .Title }}" />
+        </div>
+      </div>
+
+      <div class="about-hero-text">
+        <h1 id="page-title">{{ $data.page_title | default hugo.Data.config.page_title }}</h1>
+        {{- with $data.subtitle | default hugo.Data.config.subtitle -}}
+        <p class="about-role">{{ . }}</p>
+        {{- end -}}
+        {{- with .Params.affiliation }}
+        <p class="about-affil">{{ . }}</p>
+        {{- end }}
+
+        {{- with or .Params.research_interest .Params.email .Params.field }}
+        <dl class="about-hero-meta">
+          {{- with $.Params.research_interest }}
+          <div class="meta-row">
+            <dt>Research interest</dt>
+            <dd>{{ . }}</dd>
+          </div>
+          {{- end }}
+          {{- with $.Params.email }}
+          <div class="meta-row">
+            <dt>Mail</dt>
+            <dd><a href="mailto:{{ . }}">{{ . }}</a></dd>
+          </div>
+          {{- end }}
+          {{- with $.Params.field }}
+          <div class="meta-row">
+            <dt>Field</dt>
+            <dd>{{ . }}</dd>
+          </div>
+          {{- end }}
+        </dl>
+        {{- end }}
+
+        {{- with (index hugo.Data.config "links") }}
+        <div class="about-social">
+          {{- range . }}
+          {{- $iconId := .link_name | lower }}
+          <a href="{{ .link }}" target="_blank" rel="noopener" aria-label="{{ .link_name }}">
+            {{ partial "icon.html" $iconId }}
+          </a>
+          {{- end }}
+        </div>
+        {{- end }}
+      </div>
+    </header>
+
+    <article class="about-body">
+      {{partial "textprocessing.html" . }}
+    </article>
+
+    {{partial "footer.html" .}}
+    </main>
+</div>
+</body>
+</html>

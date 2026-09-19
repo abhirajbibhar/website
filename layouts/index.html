@@ -5,6 +5,7 @@
 <body>
 {{partial "nav.html" .}}
 <div class="singlePage">
+    <main>
     <!-- Begin actual content -->
     <article>
         {{- $config := cond (eq $.Site.Language.Lang "en") "config" (printf "config.%s" $.Site.Language.Lang) -}}
@@ -21,6 +22,7 @@
         {{end}}
     </article>
     {{partial "footerIndex.html" .}}
+    </main>
 </div>
 </body>
 </html>

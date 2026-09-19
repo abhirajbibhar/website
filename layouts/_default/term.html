@@ -5,6 +5,7 @@
 <body>
 {{partial "nav.html" .}}
 <div class="singlePage">
+    <main>
     <!-- Begin actual content -->
     <article>
         <h1>{{ i18n "tag" }}: {{ .Title }}</h1>
@@ -14,6 +15,7 @@
         {{partial "page-list.html" .Paginator.Pages}}
         {{ template "_internal/pagination.html" . }}
     </article>
+    </main>
     <!-- {{partial "contact.html" .}} -->
 </div>
 </body>

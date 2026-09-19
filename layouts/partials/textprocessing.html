@@ -41,7 +41,9 @@
       {{$href := strings.TrimRight "/" ($page.GetPage $title).RelPermalink}}
       {{$display := default $title (index $split 1)}}
       {{if not $href}}
-        {{$link := printf "<a class=\"internal-link broken\">%s</a>" $display}}
+        {{/* Not an <a>: a link without an href is not crawlable and fails
+             Lighthouse's "Links are crawlable" audit. */}}
+        {{$link := printf "<span class=\"internal-link broken\">%s</span>" $display}}
         {{$content = replace $content . $link}}
       {{else}}
         {{$fullhref := printf "%s%s" $href $block }}

@@ -4,12 +4,13 @@
 {{ $vendor := partialCached "lib/vendor.html" . }}
 <head>
   <meta charset="UTF-8" />
-  <meta name="description"
-    content="{{if .IsHome}}{{$data.description | default hugo.Data.config.description}}{{else}}{{.Summary}}{{end}}" />
-  <title>
-    {{ if .Title }}{{ .Title }}{{ else }}{{ $data.page_title | default hugo.Data.config.page_title }}{{ end }}
-  </title>
+  {{- $meta := partial "page-meta.html" . -}}
+  <meta name="description" content="{{ $meta.desc }}" />
+  <title>{{ $meta.title }}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- SEO: canonical, Open Graph, Twitter Card, JSON-LD -->
+  {{ partial "seo.html" (dict "page" . "meta" $meta) }}
 
   <!-- Favicon -->
   {{ $favicon := $data.favicon | default hugo.Data.config.favicon | default (slice (dict "rel" "shortcut icon" "type" "image/png" "href" "icon.png")) }}
@@ -22,11 +23,25 @@
   {{- end }}
   {{ end }}
 
-  <!-- Preload critical fonts -->
-  <link rel="preload" href="/et-book/et-book-roman-line-figures/et-book-roman-line-figures.woff" as="font" type="font/woff" crossorigin />
-  <link rel="preload" href="/et-book/et-book-bold-line-figures/et-book-bold-line-figures.woff" as="font" type="font/woff" crossorigin />
+  <!-- Preload critical fonts (paths must match the flat files in static/et-book/
+       and the @font-face src in base.scss; the old nested paths 404'd). -->
+  <link rel="preload" href="{{ "et-book/et-book-roman-line-figures.woff" | relURL }}" as="font" type="font/woff" crossorigin />
+  <link rel="preload" href="{{ "et-book/et-book-bold-line-figures.woff" | relURL }}" as="font" type="font/woff" crossorigin />
+  <link rel="preload" href="{{ "et-book/et-book-display-italic-old-style-figures.woff" | relURL }}" as="font" type="font/woff" crossorigin />
 
-  <!-- CSS (render-blocking by nature, but minified & single request) -->
+  <!-- Apply the saved theme before first paint. Previously darkmode.js did this
+       after the deferred script ran, which forced a full-page restyle and
+       repaint (including the LCP text) once the page had already rendered. -->
+  <script>
+    (function () {
+      try {
+        var pref = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+        document.documentElement.setAttribute("saved-theme", localStorage.getItem("theme") || pref);
+      } catch (e) {}
+    })();
+  </script>
+
+  <!-- CSS (inlined; see below) -->
   {{$sass := resources.Match "styles/[!_]*.scss" }}
   {{$css := slice }}
   {{range $sass}}
@@ -37,11 +52,16 @@
     {{$scss := resources.Get "styles/_callouts.scss" | css.Sass (dict "outputStyle" "compressed") }}
     {{$css = $css | append $scss}}
   {{end}}
-  {{$finalCss := $css | resources.Concat "styles.css" | resources.Fingerprint "md5" | resources.Minify }}
-  <link href="{{$finalCss.RelPermalink}}" rel="stylesheet" />
+  {{/* Inlined rather than linked: the audit showed the single stylesheet was the
+       only remaining render-blocking request, costing ~740 ms of FCP/LCP.
+       The stylesheet is ~10 KB gzipped and shares the document's compression. */}}
+  {{$finalCss := $css | resources.Concat "styles.css" | resources.Minify }}
+  <style>{{$finalCss.Content | safeCSS}}</style>
 
-  {{$lightSyntax := resources.Get "styles/_light_syntax.scss" | css.Sass (dict "outputStyle" "compressed") | resources.Fingerprint "md5" | resources.Minify }}
-  <link href="{{$lightSyntax.RelPermalink}}" rel="stylesheet" id="theme-link">
+  {{/* Syntax highlighting is tiny: inline the light theme and let darkmode.js
+       add the dark theme on demand, so neither costs a render-blocking request. */}}
+  {{$lightSyntax := resources.Get "styles/_light_syntax.scss" | css.Sass (dict "outputStyle" "compressed") | resources.Minify }}
+  <style id="syntax-light">{{$lightSyntax.Content | safeCSS}}</style>
 
   <!-- All scripts deferred — nothing blocks rendering -->
   {{$scripts := (slice "js/darkmode.js" "js/util.js")}}
@@ -94,6 +114,24 @@
     const SITE_PATH = new URL({{.Site.BaseURL}}).pathname
     const BASE_URL = window.location.origin + SITE_PATH
     const BASE = BASE_URL.replace(/\/$/, "")
+
+    {{ $graphJs := resources.Get "js/graph.js" | resources.Fingerprint "md5" }}
+    const loadScript = (src) => new Promise((resolve, reject) => {
+      const el = document.createElement("script")
+      el.src = src
+      el.onload = resolve
+      el.onerror = reject
+      document.head.appendChild(el)
+    })
+    let graphLibs
+    // d3 + graph.js are fetched only when the graph is about to be drawn.
+    const ensureGraphLibs = () => {
+      if (!graphLibs) {
+        graphLibs = (window.d3 ? Promise.resolve() : loadScript("{{ $vendor.d3.RelPermalink }}"))
+          .then(() => loadScript("{{ $graphJs.RelPermalink }}"))
+      }
+      return graphLibs
+    }
     const fetchData = Promise.all([
           fetch("{{ $linkIndex.RelPermalink }}")
             .then(data => data.json())
@@ -140,18 +178,37 @@
       const footer = document.getElementById("footer")
       if (footer) {
         const container = document.getElementById("graph-container")
-        if (!container) return requestAnimationFrame(render)
-        container.textContent = ""
-
-        const drawGlobal = isHome && {{hugo.Data.graphConfig.enableGlobalGraph}};
-        drawGraph(
-            BASE,
-            drawGlobal,
-            {{hugo.Data.graphConfig.paths}},
-            drawGlobal ? {{hugo.Data.graphConfig.globalGraph}} : {{hugo.Data.graphConfig.localGraph}}
-          );
-
+        if (container) {
+          const drawGlobal = isHome && {{hugo.Data.graphConfig.enableGlobalGraph}};
+          const draw = () => {
+            container.textContent = ""
+            ensureGraphLibs()
+              .then(() =>
+                drawGraph(
+                  BASE,
+                  drawGlobal,
+                  {{hugo.Data.graphConfig.paths}},
+                  drawGlobal ? {{hugo.Data.graphConfig.globalGraph}} : {{hugo.Data.graphConfig.localGraph}}
+                )
+              )
+              .catch(() => {})
+          };
+          // The graph sits below the fold and its force simulation is the
+          // heaviest task on the page: defer it until it scrolls into view
+          // rather than running it during load (it was delaying LCP).
+          if ("IntersectionObserver" in window) {
+            const io = new IntersectionObserver((entries) => {
+              if (entries.some((e) => e.isIntersecting)) {
+                io.disconnect();
+                draw();
+              }
+            }, { rootMargin: "300px" });
+            io.observe(container);
+          } else {
+            draw();
+          }
         }
+      }
       {{end}}
     }
 

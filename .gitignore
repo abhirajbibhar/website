@@ -4,3 +4,7 @@ resources
 .idea
 .hugo_build.lock
 node_modules
+design
+notes
+task.txt
+content\notes

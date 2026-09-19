@@ -1,5 +1,3 @@
-{{ $vendor := partialCached "lib/vendor.html" . }}
-<script defer src="{{ $vendor.d3.RelPermalink }}"></script>
 <h3>{{ i18n "interactive_graph" }}</h3>
 <div id="graph-container"></div>
 <style>
@@ -11,5 +9,6 @@
     --g-link-active: #5a7282;
   }
 </style>
-{{ $js := resources.Get "js/graph.js" | resources.Fingerprint "md5" }}
-<script defer src="{{ $js.RelPermalink }}"></script>
+{{/* d3 and graph.js are loaded on demand from head.html, only once the graph
+     scrolls into view. Shipping them eagerly cost ~62 KB of download and parse
+     on every page for a widget most visits never reach. */}}

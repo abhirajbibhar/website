@@ -1,5 +1,6 @@
 baseURL = "https://demo.abhirajbibhar.pages.dev/"
 defaultContentLanguage = "en"
+enableRobotsTXT = true
 # languageCode deprecated; use defaultContentLanguage / languages
 relativeURLs = false
 disablePathToLower = true
@@ -17,13 +18,25 @@ enableGitInfo = true
   identifier = "home"
 
 [[menu.main]]
+  name = "Writings"
+  url = "/posts"
+  identifier = "blog"
+
+[[menu.main]]
+  name = "About"
+  url = "/about"
+  identifier = "about"
+
+[[menu.main]]
   name = "Notes"
   url = "/notes"
-  identifier = "note"
+  identifier = "note" 
 
 [services]
   [services.googleAnalytics]
-    id = " "
+    # Blank id = analytics disabled. The previous single-space value made Hugo
+    # emit the gtag snippet anyway, loading gtag/js?id=%20 on every page.
+    id = ""
 
 [markup]
     [markup.tableOfContents]

@@ -1,20 +1,35 @@
 const userPref = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
 const currentTheme = localStorage.getItem('theme') ?? userPref
-const syntaxTheme = document.querySelector("#theme-link");
+/* The light syntax theme is inlined in <head>; the dark theme is injected only
+   when dark mode is active, instead of shipping a second render-blocking
+   stylesheet for every visitor. */
+{{ $darkSyntax := resources.Get "styles/_dark_syntax.scss" | css.Sass (dict "outputStyle" "compressed") | resources.Minify }}
+const darkSyntaxCss = {{ $darkSyntax.Content | jsonify }};
 
-
-{{ $darkSyntax := resources.Get "styles/_dark_syntax.scss" | css.Sass (dict "outputStyle" "compressed") | resources.Fingerprint "md5" | resources.Minify  }}
-{{ $lightSyntax := resources.Get "styles/_light_syntax.scss" | css.Sass (dict "outputStyle" "compressed") | resources.Fingerprint "md5" | resources.Minify  }}
+const applySyntaxTheme = (theme) => {
+  const id = "syntax-dark";
+  const existing = document.getElementById(id);
+  if (theme === "dark") {
+    if (!existing) {
+      const style = document.createElement("style");
+      style.id = id;
+      style.textContent = darkSyntaxCss;
+      document.head.appendChild(style);
+    }
+  } else if (existing) {
+    existing.remove();
+  }
+};
 
 if (currentTheme) {
   document.documentElement.setAttribute('saved-theme', currentTheme);
-  syntaxTheme.href = currentTheme === 'dark' ?  '{{ $darkSyntax.RelPermalink }}' :  '{{ $lightSyntax.RelPermalink }}';
+  applySyntaxTheme(currentTheme);
 }
 
 const applyTheme = (theme) => {
   document.documentElement.setAttribute('saved-theme', theme);
   localStorage.setItem('theme', theme);
-  syntaxTheme.href = theme === 'dark' ? '{{ $darkSyntax.RelPermalink }}' : '{{ $lightSyntax.RelPermalink }}';
+  applySyntaxTheme(theme);
 
   // Sync the new switch toggle (nav bar)
   const switchEl = document.querySelector('#theme-toggle');

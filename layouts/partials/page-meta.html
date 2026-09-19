@@ -1,0 +1,46 @@
+{{- $config := cond (eq .Site.Language.Lang "en") "config" (printf "config.%s" .Site.Language.Lang) -}}
+{{- $data := index hugo.Data $config -}}
+{{- $siteName := $data.page_title | default hugo.Data.config.page_title | default .Site.Title -}}
+{{- $siteDesc := $data.description | default hugo.Data.config.description | default .Site.Params.description | default "" -}}
+
+{{- /* Title: bare site name on the home page, "Page · Site" everywhere else. */ -}}
+{{- $pageTitle := .Title | default $siteName -}}
+{{- $title := $pageTitle -}}
+{{- if and (not .IsHome) (ne $pageTitle $siteName) -}}
+  {{- $title = printf "%s · %s" $pageTitle $siteName -}}
+{{- end -}}
+
+{{- $desc := "" -}}
+{{- if .IsHome -}}
+  {{- $desc = .Description | default $siteDesc -}}
+{{- else -}}
+  {{- with .Description -}}
+    {{- $desc = . | plainify -}}
+  {{- else -}}
+    {{- with .Params.summary -}}
+      {{- $desc = . | plainify -}}
+    {{- else -}}
+      {{- $summary := .Summary | plainify | htmlUnescape -}}
+      {{- $desc = cond (ne $summary "") $summary $siteDesc -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- $desc = $desc | replaceRE `\s+` " " | strings.TrimSpace | truncate 160 -}}
+{{- if not $desc -}}{{- $desc = $siteDesc -}}{{- end -}}
+
+{{- $img := "" -}}
+{{- with .Resources.GetMatch "og-image*" -}}{{- $img = .Permalink -}}{{- end -}}
+{{- if not $img -}}{{- with .Resources.GetMatch "cover*" -}}{{- $img = .Permalink -}}{{- end -}}{{- end -}}
+{{- if not $img -}}{{- with .Params.image -}}{{- $img = strings.TrimPrefix "/" . | absURL -}}{{- end -}}{{- end -}}
+{{- if not $img -}}{{- $img = "img/abhiraj-profile-100kb.jpeg" | absURL -}}{{- end -}}
+
+{{- return (dict
+      "title" $title
+      "pageTitle" $pageTitle
+      "desc" $desc
+      "img" $img
+      "url" .Permalink
+      "siteName" $siteName
+      "siteDesc" $siteDesc
+      "data" $data
+    ) -}}

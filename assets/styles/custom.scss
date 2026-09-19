@@ -1,5 +1,148 @@
 // Add your own CSS here!
 
+// ── About ──────────────────────────────────────────────────
+.about-hero {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 3em;
+  align-items: start;
+  padding: 2em 0;
+  border-bottom: 1px solid var(--outlinegray);
+  margin-bottom: 0;
+
+  @media (max-width: 780px) {
+    grid-template-columns: 1fr;
+    gap: 1.5em;
+    padding: 1.5em 0;
+    align-items: center;
+  }
+}
+
+.about-hero-portrait {
+  @media (max-width: 780px) {
+    display: flex;
+    justify-content: center;
+  }
+}
+
+.about-hero-frame {
+  width: 280px;
+
+  @media (max-width: 780px) {
+    width: 180px;
+  }
+
+  img {
+    width: 100%;
+    aspect-ratio: 5 / 6;
+    object-fit: cover;
+    display: block;
+    border: 1px solid var(--outlinegray);
+    background: var(--lightgray);
+    border-radius: 3px;
+    box-shadow: 14px 14px 0 var(--primary);
+  }
+}
+
+.about-hero-text #page-title {
+  font-family: var(--font-header);
+  font-size: 2em;
+  line-height: 1.25;
+  margin: 0 0 0.25em;
+}
+
+.about-hero-text .about-role {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 1em;
+  color: var(--gray);
+  margin: 0 0 0.75em;
+}
+
+.about-hero-text .about-affil {
+  color: var(--gray);
+  line-height: 1.6;
+  margin: 0;
+}
+
+@media (max-width: 780px) {
+  .about-hero-text {
+    text-align: center;
+  }
+  .about-hero-meta {
+    text-align: left;
+  }
+}
+
+.about-hero-meta {
+  margin: 1.5em 0 0;
+  padding-top: 1em;
+  border-top: 1px solid var(--outlinegray);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.about-hero-meta .meta-row {
+  display: grid;
+  grid-template-columns: 10em 1fr;
+  gap: 0.75em;
+  align-items: baseline;
+}
+
+.about-hero-meta dt {
+  margin: 0;
+  color: var(--secondary);
+}
+
+.about-hero-meta dd {
+  margin: 0;
+  color: var(--dark);
+}
+
+.about-hero-meta dd a {
+  color: var(--dark);
+  border-bottom: 1px solid var(--outlinegray);
+  text-decoration: none;
+}
+
+.about-hero-meta dd a:hover {
+  color: var(--secondary);
+  border-color: var(--secondary);
+}
+
+.about-social {
+  display: flex;
+  gap: 0.75em;
+  margin-top: 1.5em;
+
+  a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75em;
+    height: 1.75em;
+    border: 1px solid var(--outlinegray);
+    border-radius: 5px;
+    color: var(--gray);
+    transition: color 0.2s ease, border-color 0.2s ease;
+
+    svg {
+      width: 1.1em;
+      height: 1.1em;
+    }
+
+    &:hover {
+      color: var(--secondary);
+      border-color: var(--secondary);
+    }
+  }
+}
+
+.about-body {
+  padding-top: 1.5em;
+}
+
 // Home page header
 .home-header {
   display: block;
@@ -17,58 +160,6 @@
   }
 }
 
-:root {
-  --light: #faf8f8;
-  --dark: #141021;
-  --secondary: #284b63;
-  --tertiary: #84a59d;
-  --visited: #afbfc9;
-  --primary: #f28482;
-  --gray: #4e4e4e;
-  --lightgray: #f0f0f0;
-  --outlinegray: #dadada;
-  --million-progress-bar-color: var(--secondary);
-
-  // Nav bar tokens
-  --bar-bg: rgba(250, 248, 248, 0.85);
-  --bar-border: rgba(0, 0, 0, 0.08);
-  --link: var(--secondary);
-  --ink: var(--dark);
-  --ink-dim: var(--gray);
-  --hover: rgba(0, 0, 0, 0.05);
-  --panel-bg: var(--light);
-  --panel-border: var(--outlinegray);
-  --accent: var(--primary);
-  --switch-track: var(--outlinegray);
-  --switch-knob: var(--light);
-  --titleFont: var(--font-header);
-  --bodyFont: var(--font-body);
-  --codeFont: var(--font-mono);
-}
-
-[saved-theme="dark"] {
-  --light: #1e1e21 !important;
-  --dark: #fbfffe !important;
-  --secondary: #6b879a !important;
-  --visited: #4a575e !important;
-  --tertiary: #84a59d !important;
-  --primary: #f58382 !important;
-  --gray: #d4d4d4 !important;
-  --lightgray: #292633 !important;
-  --outlinegray: #343434 !important;
-
-  // Nav bar tokens (dark)
-  --bar-bg: rgba(30, 30, 33, 0.88) !important;
-  --bar-border: rgba(255, 255, 255, 0.08) !important;
-  --ink: var(--dark) !important;
-  --ink-dim: var(--gray) !important;
-  --hover: rgba(255, 255, 255, 0.06) !important;
-  --panel-bg: var(--light) !important;
-  --panel-border: var(--outlinegray) !important;
-  --switch-track: var(--outlinegray) !important;
-  --switch-knob: var(--light) !important;
-}
-
 span {
   &.caps {
     font-variant: small-caps;
@@ -77,7 +168,7 @@ span {
     color: var(--dark);
   }
 }
- 
+
 hr.footnotes-sep,
 .footnotes > hr {
   width: 15%;
@@ -88,7 +179,7 @@ hr.footnotes-sep,
 }
 
 .epigraph {
-  margin: 2em 0 2em 2em;
+  margin: 2em 0 0 2em;
   > blockquote {
     margin-top: 1em;
     margin-bottom: 1em;

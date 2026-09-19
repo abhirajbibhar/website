@@ -3,13 +3,14 @@
 {{ partial "head.html" . }}
 
 <body>
+{{partial "nav.html" .}}
 <div class="singlePage">
     {{partial "darkmode.html" .}}
-    <div class="centered">
+    <main class="centered">
         <h1>404.</h1>
         <h3>{{ i18n "404_message" }}</h3>
         <a href="{{ .Site.BaseURL }}">{{ i18n "404_back" }}</a>
-    </div>
+    </main>
 </div>
 </body>
 </html>

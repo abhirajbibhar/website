@@ -1,0 +1,274 @@
+{{- /* seo.html — context is (dict "page" PAGE "meta" META).
+       Emits canonical, Open Graph, Twitter Card and JSON-LD structured data.
+
+       Note on escaping: Go's html/template treats <script> as a JavaScript
+       context, so a string value written as {{ $x }} is emitted as a quoted,
+       escaped JSON string automatically. That is why the values below are not
+       wrapped in jsonify. The previous version wrote {{ $ }} instead of the
+       local value in the image/abstract/doi/citation fields, which serialised
+       the whole Page object into "image" and friends; that is fixed here. */ -}}
+{{- $page := .page -}}
+{{- $meta := .meta -}}
+{{- $data := $meta.data -}}
+{{- $siteName := $meta.siteName -}}
+{{- $siteDesc := $meta.siteDesc -}}
+{{- $title := $meta.pageTitle -}}
+{{- $desc := $meta.desc -}}
+{{- $url := $meta.url -}}
+{{- $img := $meta.img -}}
+{{- $siteURL := $page.Site.Home.Permalink -}}
+{{- $lang := $page.Lang | default $page.Site.Language.Lang -}}
+{{- $authorName := $data.name | default $siteName -}}
+
+{{- /* Profile URLs from data/config.yaml, minus the mailto: entry, which is not
+       a sameAs URL. */ -}}
+{{- $sameAs := slice -}}
+{{- range $data.links -}}
+  {{- if hasPrefix .link "http" -}}{{- $sameAs = $sameAs | append .link -}}{{- end -}}
+{{- end -}}
+
+{{- $isHome := $page.IsHome -}}
+{{- $isProfile := eq $page.Layout "about" -}}
+{{- $isResearch := eq $page.Type "research" -}}
+{{- $isArticle := and (not $isHome) $page.IsPage -}}
+
+{{/* ── canonical ── */}}
+<link rel="canonical" href="{{ $url }}" />
+
+{{/* ── Open Graph ── */}}
+<meta property="og:site_name" content="{{ $siteName }}" />
+<meta property="og:title" content="{{ $title }}" />
+<meta property="og:description" content="{{ $desc }}" />
+<meta property="og:url" content="{{ $url }}" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:type" content="{{ if $isArticle }}article{{ else }}website{{ end }}" />
+{{- if $isArticle -}}
+  {{- if not $page.Date.IsZero }}
+<meta property="article:published_time" content="{{ $page.Date.Format "2006-01-02T15:04:05Z07:00" }}" />
+  {{- end -}}
+  {{- if not $page.Lastmod.IsZero }}
+<meta property="article:modified_time" content="{{ $page.Lastmod.Format "2006-01-02T15:04:05Z07:00" }}" />
+  {{- end -}}
+  {{- range $page.Params.tags }}
+<meta property="article:tag" content="{{ . }}" />
+  {{- end -}}
+{{- end }}
+<meta property="og:image" content="{{ $img }}" />
+<meta property="og:image:alt" content="{{ $title }}" />
+
+{{/* ── Twitter Card ── */}}
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="{{ $title }}" />
+<meta name="twitter:description" content="{{ $desc }}" />
+<meta name="twitter:image" content="{{ $img }}" />
+<meta name="twitter:image:alt" content="{{ $title }}" />
+<meta name="twitter:site" content="@abhirajbibhar" />
+<meta name="twitter:creator" content="@abhirajbibhar" />
+
+{{/* ── Additional SEO ── */}}
+<meta name="author" content="{{ $authorName }}" />
+{{- if eq $page.Kind "404" }}
+<meta name="robots" content="noindex, follow" />
+{{- else }}
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+{{- end }}
+
+{{/* ── JSON-LD ── */}}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  {{- if $isHome }}
+  "@type": "WebSite",
+  "@id": {{ printf "%s#website" $siteURL }},
+  "url": {{ $siteURL }},
+  "name": {{ $siteName }},
+  "description": {{ $siteDesc }},
+  "inLanguage": {{ $lang }},
+  "publisher": {
+    "@type": "Person",
+    "name": {{ $authorName }},
+    "url": {{ $siteURL }}
+    {{- with $sameAs }},
+    "sameAs": [
+      {{- range $i, $l := . }}{{ if $i }},{{ end }}
+      {{ $l }}
+      {{- end }}
+    ]
+    {{- end }}
+  }
+  {{- else if $isProfile }}
+  "@type": "ProfilePage",
+  "@id": {{ printf "%s#webpage" $url }},
+  "url": {{ $url }},
+  "name": {{ $title }},
+  "description": {{ $desc }},
+  "inLanguage": {{ $lang }},
+  "isPartOf": {
+    "@type": "WebSite",
+    "@id": {{ printf "%s#website" $siteURL }},
+    "url": {{ $siteURL }},
+    "name": {{ $siteName }}
+  },
+  "mainEntity": {
+    "@type": "Person",
+    "name": {{ $authorName }},
+    "url": {{ $siteURL }}
+    {{- with $page.Params.role | default $data.subtitle }},
+    "jobTitle": {{ . }}
+    {{- end }}
+    {{- with $page.Params.affiliation }},
+    "affiliation": {
+      "@type": "Organization",
+      "name": {{ . }}
+    }
+    {{- end }}
+    {{- with $page.Params.email }},
+    "email": {{ . }}
+    {{- end }}
+    {{- with $sameAs }},
+    "sameAs": [
+      {{- range $i, $l := . }}{{ if $i }},{{ end }}
+      {{ $l }}
+      {{- end }}
+    ]
+    {{- end }}
+  }
+  {{- else if $isResearch }}
+  "@type": "ScholarlyArticle",
+  "@id": {{ printf "%s#article" $url }},
+  "headline": {{ $title }},
+  "description": {{ $desc }},
+  "url": {{ $url }},
+  "inLanguage": {{ $lang }},
+  "author": {
+    "@type": "Person",
+    "name": {{ $authorName }},
+    "url": {{ $siteURL }}
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": {{ $siteName }},
+    "url": {{ $siteURL }}
+  },
+  "image": {{ $img }}
+  {{- if not $page.Date.IsZero }},
+  "datePublished": {{ $page.Date.Format "2006-01-02T15:04:05Z07:00" }}
+  {{- end }}
+  {{- if not $page.Lastmod.IsZero }},
+  "dateModified": {{ $page.Lastmod.Format "2006-01-02T15:04:05Z07:00" }}
+  {{- end }}
+  {{- with $page.Params.abstract }},
+  "abstract": {{ . }}
+  {{- end }}
+  {{- with $page.Params.doi }},
+  "identifier": {
+    "@type": "PropertyValue",
+    "propertyID": "DOI",
+    "value": {{ . }}
+  }
+  {{- end }}
+  {{- with $page.Params.journal }},
+  "isPartOf": {
+    "@type": "Periodical",
+    "name": {{ . }}
+  }
+  {{- end }}
+  {{- with $page.Params.citation }},
+  "citation": {{ . }}
+  {{- end }}
+  {{- with $page.Params.tags }},
+  "keywords": {{ delimit . ", " }}
+  {{- end }}
+  {{- with $page.Params.volume }},
+  "volume": {{ . }}
+  {{- end }}
+  {{- with $page.Params.issue }},
+  "issueNumber": {{ . }}
+  {{- end }}
+  {{- with $page.Params.pages }}
+  {{- $parts := split . "-" }},
+  "pageStart": {{ index $parts 0 }},
+  "pageEnd": {{ index $parts 1 | default (index $parts 0) }}
+  {{- end }}
+  {{- else if $isArticle }}
+  "@type": "Article",
+  "@id": {{ printf "%s#article" $url }},
+  "headline": {{ $title }},
+  "description": {{ $desc }},
+  "url": {{ $url }},
+  "inLanguage": {{ $lang }},
+  "author": {
+    "@type": "Person",
+    "name": {{ $authorName }},
+    "url": {{ $siteURL }}
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": {{ $siteName }},
+    "url": {{ $siteURL }}
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": {{ $url }}
+  },
+  "image": {{ $img }}
+  {{- if not $page.Date.IsZero }},
+  "datePublished": {{ $page.Date.Format "2006-01-02T15:04:05Z07:00" }}
+  {{- end }}
+  {{- if not $page.Lastmod.IsZero }},
+  "dateModified": {{ $page.Lastmod.Format "2006-01-02T15:04:05Z07:00" }}
+  {{- end }}
+  {{- with $page.Params.tags }},
+  "keywords": {{ delimit . ", " }}
+  {{- end }}
+  {{- else }}
+  "@type": "CollectionPage",
+  "@id": {{ printf "%s#webpage" $url }},
+  "url": {{ $url }},
+  "name": {{ $title }},
+  "description": {{ $desc }},
+  "inLanguage": {{ $lang }},
+  "isPartOf": {
+    "@type": "WebSite",
+    "@id": {{ printf "%s#website" $siteURL }},
+    "url": {{ $siteURL }},
+    "name": {{ $siteName }}
+  }
+  {{- with $page.Pages }}
+  {{- $items := slice }}
+  {{- range $i, $p := first 20 . }}
+    {{- $items = $items | append (dict "@type" "ListItem" "position" (add $i 1) "url" $p.Permalink "name" $p.Title) }}
+  {{- end }}
+  {{- if $items }},
+  "mainEntity": {
+    "@type": "ItemList",
+    "itemListElement": {{ $items }}
+  }
+  {{- end }}
+  {{- end }}
+  {{- end }}
+}
+</script>
+
+{{- /* Breadcrumbs as a separate valid graph. Only emitted when there is more
+       than one step, i.e. off the home page. */ -}}
+{{- if not $isHome -}}
+{{- $crumbs := slice -}}
+{{- $pos := 1 -}}
+{{- range $page.Ancestors.Reverse -}}
+  {{- $crumbs = $crumbs | append (dict "@type" "ListItem" "position" $pos "name" .Title "item" .Permalink) -}}
+  {{- $pos = add $pos 1 -}}
+{{- end -}}
+{{- if $page.Title -}}
+  {{- $crumbs = $crumbs | append (dict "@type" "ListItem" "position" $pos "name" $page.Title "item" $url) -}}
+{{- end -}}
+{{- if gt (len $crumbs) 1 }}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": {{ $crumbs }}
+}
+</script>
+{{- end -}}
+{{- end -}}

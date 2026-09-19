@@ -373,12 +373,13 @@ a.brand:visited {
   }
 
   .dropup-bar {
-    gap: 4px;
-    padding: 6px;
+    gap: 8px;
+    padding: 8px 10px;
+    max-width: 90%;
   }
 
   .dropup-btn {
-    padding: 7px 8px;
+    padding: 8px 10px;
   }
 
   a.brand:link,

@@ -5,6 +5,7 @@
 <body>
 {{partial "nav.html" .}}
 <div class="singlePage">
+    <main>
     <!-- Begin actual content -->
     <article>
       {{if .Title}}<h1>{{ .Title }}</h1>{{end}}
@@ -21,6 +22,7 @@
       {{partial "textprocessing.html" . }}
     </article>
     {{partial "footer.html" .}}
+    </main>
 </div>
 </body>
 </html>
