@@ -18,19 +18,24 @@ const addCopyButtons = () => {
         const button = document.createElement("button");
         button.className = "clipboard-button";
         button.type = "button";
+        // Icon-only button: without a name Lighthouse fails "button-name" on every page with code.
+        button.setAttribute("aria-label", "Copy code");
+        button.title = "Copy code";
         button.innerHTML = svgCopy;
         // remove every second newline from lastCodeBlock.innerText
         button.addEventListener("click", () => {
             navigator.clipboard.writeText(lastCodeBlock.innerText.replace(/\n\n/g, "\n")).then(
                 () => {
                     button.blur();
+                    button.setAttribute("aria-label", "Copied");
                     button.innerHTML = svgCheck;
                     setTimeout(() => {
+                    	button.setAttribute("aria-label", "Copy code")
                     	button.innerHTML = svgCopy
                     	button.style.borderColor = ""
                     }, 2000);
                 },
-                (error) => (button.innerHTML = "Error")
+                (error) => { button.setAttribute("aria-label", "Copy failed"); button.textContent = "Error" }
             );
         });
         // find chroma inside els[i]

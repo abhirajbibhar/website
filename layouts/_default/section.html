@@ -8,11 +8,15 @@
     <main>
     <!-- Begin actual content -->
     <article>
+        {{- /* Paginate the sorted set. The old `.Paginator.Pages.ByLastmod.Reverse` paginated
+               in default order first and only then sorted each page, so with more than one
+               page the "newest" 10 were not the 10 most recently modified. */ -}}
+        {{ $paginator := .Paginate (.Pages.ByLastmod.Reverse) }}
         <h1>{{ i18n "all_posts" . }}</h1>
         {{with .Params.description}}
             <p>{{.}}</p>
         {{end}}
-        {{partial "page-list.html" .Paginator.Pages.ByLastmod.Reverse }}
+        {{partial "page-list.html" (dict "pages" $paginator.Pages "level" 2) }}
         {{ template "_internal/pagination.html" .}}
     </article>
     </main>

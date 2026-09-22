@@ -53,6 +53,11 @@ const removeMarkdown = (
   return output
 }
 
+// The typed search term is user input and ends up inside innerHTML; without this,
+// typing "<b" or "&" garbled the results (or injected markup).
+const escapeHTML = (str) =>
+  str.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]))
+
 const highlight = (content, term) => {
   const highlightWindow = 20
   // try to find direct match first
@@ -66,7 +71,7 @@ const highlight = (content, term) => {
       .slice(0, h)
     return (
       (before.length == h ? `...${before.join(" ")}` : before.join(" ")) +
-      `<span class="search-highlight">${term}</span>` +
+      `<span class="search-highlight">${escapeHTML(term)}</span>` +
       after.join(" ")
     )
   }
@@ -145,11 +150,14 @@ function closeSearch() {
 const registerHandlers = (onInputFn) => {
   const source = document.getElementById("search-bar")
   const searchContainer = document.getElementById("search-container")
-  let term
+  // NB: no local `let term` here. It shadowed the global that full-text-search.js
+  // assigns, so pressing Enter always navigated to "#:~:text=undefined".
   source.addEventListener("keyup", (e) => {
     if (e.key === "Enter") {
+      // Enter with no results (or an empty box) used to throw: there is no first card,
+      // or it is the "No results" card, which has no id.
       const anchor = document.getElementsByClassName("result-card")[0]
-      redir(anchor.id, term)
+      if (anchor && anchor.id) redir(anchor.id, term)
     }
   })
   source.addEventListener("input", onInputFn)

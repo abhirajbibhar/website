@@ -12,7 +12,7 @@
         {{with .Params.description}}
             <p>{{.}}</p>
         {{end}}
-        {{partial "page-list.html" .Paginator.Pages}}
+        {{partial "page-list.html" (dict "pages" .Paginator.Pages "level" 2)}}
         {{ template "_internal/pagination.html" . }}
     </article>
     </main>

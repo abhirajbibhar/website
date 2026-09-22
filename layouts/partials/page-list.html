@@ -1,17 +1,27 @@
+{{- /* Context is (dict "pages" PAGES "level" N).
+       "level" is the heading rank for each entry's title, so the outline never
+       skips a level: 2 when the list sits directly under the page <h1> (section and
+       tag pages), 3 when it sits under an <h2> (home "Recent Notes", tag index).
+       Visual size is fixed by .section-title in base.scss, not by the tag.
+       Links use RelPermalink so they stay on the host serving the page (localhost,
+       preview deploys) and are picked up by the SPA router; .Permalink would hard-code
+       the production baseURL. */ -}}
+{{- $pages := .pages -}}
+{{- $level := .level | default 2 -}}
 <ul class="section-ul">
-    {{- range . -}}
+    {{- range $pages -}}
     <li class="section-li">
         <div class="section">
             <p class="meta">
                 {{partial "date-fmt.html" .}}
             </p>
             <div class="desc">
-              <h3><a href="{{ .Permalink }}" class="internal-link" data-src="{{ .RelPermalink }}">{{- .Title -}}</a></h3>
+              {{ printf "<h%d class=\"section-title\">" $level | safeHTML }}<a href="{{ .RelPermalink }}" class="internal-link" data-src="{{ .RelPermalink }}">{{- .Title -}}</a>{{ printf "</h%d>" $level | safeHTML }}
             </div>
             <div class="spacer"></div>
             <ul class="tags">
                 {{ range (.GetTerms "tags") }}
-                <li><a href="{{ .Permalink }}">{{ .LinkTitle | title}}</a></li>
+                <li><a href="{{ .RelPermalink }}">{{ .LinkTitle | title}}</a></li>
                 {{ end }}
             </ul>
         </div>

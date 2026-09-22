@@ -24,10 +24,11 @@
   {{ end }}
 
   <!-- Preload critical fonts (paths must match the flat files in static/et-book/
-       and the @font-face src in base.scss; the old nested paths 404'd). -->
-  <link rel="preload" href="{{ "et-book/et-book-roman-line-figures.woff" | relURL }}" as="font" type="font/woff" crossorigin />
-  <link rel="preload" href="{{ "et-book/et-book-bold-line-figures.woff" | relURL }}" as="font" type="font/woff" crossorigin />
-  <link rel="preload" href="{{ "et-book/et-book-display-italic-old-style-figures.woff" | relURL }}" as="font" type="font/woff" crossorigin />
+       and the first @font-face src in base.scss; WOFF2 is ~18% smaller than the WOFF
+       these used to point at). -->
+  <link rel="preload" href="{{ "et-book/et-book-roman-line-figures.woff2" | relURL }}" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="{{ "et-book/et-book-bold-line-figures.woff2" | relURL }}" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="{{ "et-book/et-book-display-italic-old-style-figures.woff2" | relURL }}" as="font" type="font/woff2" crossorigin />
 
   <!-- Apply the saved theme before first paint. Previously darkmode.js did this
        after the deferred script ran, which forced a full-page restyle and
@@ -132,7 +133,16 @@
       }
       return graphLibs
     }
-    const fetchData = Promise.all([
+    // Resolves once the page has loaded and the browser is idle. Everything below the
+    // critical path (the search/preview/graph JSON, the graph itself) waits for it, so it
+    // no longer competes with fonts, the LCP element and scripts on a slow connection.
+    const afterLoad = new Promise((resolve) => {
+      const go = () => ("requestIdleCallback" in window
+        ? requestIdleCallback(() => resolve(), { timeout: 2000 })
+        : setTimeout(resolve, 300))
+      document.readyState === "complete" ? go() : window.addEventListener("load", go, { once: true })
+    })
+    const fetchData = afterLoad.then(() => Promise.all([
           fetch("{{ $linkIndex.RelPermalink }}")
             .then(data => data.json())
             .then(data => ({
@@ -141,7 +151,7 @@
             })),
           fetch("{{ $contentIndex.RelPermalink }}")
             .then(data => data.json()),
-        ])
+        ]))
         .then(([{index, links}, content]) => ({
           index,
           links,
@@ -193,19 +203,20 @@
               )
               .catch(() => {})
           };
-          // The graph sits below the fold and its force simulation is the
-          // heaviest task on the page: defer it until it scrolls into view
-          // rather than running it during load (it was delaying LCP).
+          // The graph sits below the fold and d3 + its force simulation are the heaviest
+          // work on the page. Wait until it is in view AND the page has finished loading:
+          // on short pages the footer is in view immediately, which used to start d3
+          // during load (a forced reflow and ~800 ms of scripting on a throttled phone).
           if ("IntersectionObserver" in window) {
             const io = new IntersectionObserver((entries) => {
               if (entries.some((e) => e.isIntersecting)) {
                 io.disconnect();
-                draw();
+                afterLoad.then(draw);
               }
             }, { rootMargin: "300px" });
             io.observe(container);
           } else {
-            draw();
+            afterLoad.then(draw);
           }
         }
       }
@@ -233,6 +244,13 @@
   </script>
   {{if $data.enableSPA | default hugo.Data.config.enableSPA}}
   {{ $router := resources.Get "js/router.js" | resources.ExecuteAsTemplate "js/router.js" (dict "millionRouter" $vendor.millionRouter.RelPermalink) | resources.Fingerprint "md5" | resources.Minify }}
+  {{- /* The router is a chain of ES modules (router.js -> million-router -> render/morph),
+         which the browser would otherwise discover one level at a time. Preload the whole
+         graph so they download in parallel. */ -}}
+  <link rel="modulepreload" href="{{ $router.RelPermalink }}">
+  <link rel="modulepreload" href="{{ $vendor.millionRouter.RelPermalink }}">
+  <link rel="modulepreload" href="{{ $vendor.millionMorph.RelPermalink }}">
+  <link rel="modulepreload" href="{{ $vendor.millionRender.RelPermalink }}">
   <script type="module">
     import { attachSPARouting } from "{{$router.RelPermalink}}"
     attachSPARouting(init, render)

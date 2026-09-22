@@ -300,7 +300,10 @@ a.brand:visited {
   padding: 3px 5px;
   border: 1px solid var(--panel-border);
   border-radius: 5px;
-  font-family: var(--codeFont);
+  /* System monospace, not --codeFont: this hint sits in a closed panel, but
+     visibility:hidden text still triggers the webfont download, so Fira Code
+     (36 KB) was being fetched on every page just for "Ctrl /". */
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
   font-size: 0.7rem;
   line-height: 1;
   color: var(--ink-dim);

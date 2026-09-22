@@ -12,7 +12,23 @@
     <header class="about-hero">
       <div class="about-hero-portrait">
         <div class="about-hero-frame">
-          <img src="{{ "img/abhiraj-profile-100kb.jpeg" | relURL }}" alt="{{ .Title }}" />
+          {{- /* Portrait is processed from assets/img/profile.jpeg (a copy of the original in
+                 static/img/, which stays put because og:image and any external links point at it).
+                 It was a 1088x1446 / 98 KB JPEG shown at 180-280 px wide. Now: two WebP crops
+                 (~8 KB / ~17 KB), the 5:6 crop baked in, explicit dimensions, and high fetch
+                 priority because this is the page's LCP element. */ -}}
+          {{- $name := $data.name | default hugo.Data.config.name -}}
+          {{- $alt := i18n "portrait_alt" (dict "name" $name) -}}
+          {{- with resources.Get "img/profile.jpeg" -}}
+            {{- $small := .Fill "360x432 Center webp q80" -}}
+            {{- $large := .Fill "560x672 Center webp q80" -}}
+          <img src="{{ $large.RelPermalink }}"
+               srcset="{{ $small.RelPermalink }} 360w, {{ $large.RelPermalink }} 560w"
+               sizes="(max-width: 780px) 180px, 280px"
+               width="560" height="672" alt="{{ $alt }}" fetchpriority="high" decoding="async" />
+          {{- else -}}
+          <img src="{{ "img/abhiraj-profile-100kb.jpeg" | relURL }}" alt="{{ $alt }}" fetchpriority="high" decoding="async" />
+          {{- end -}}
         </div>
       </div>
 

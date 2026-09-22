@@ -15,6 +15,7 @@ function initPopover(baseURL, useContextualBacklinks, renderLatex) {
         var el
         if (li.dataset.ctx) {
           const linkDest = content[li.dataset.src]
+          if (!linkDest) return
           const popoverElement = `<div class="popover">
     <h3>${linkDest.title}</h3>
     <p>${highlight(removeMarkdown(linkDest.content), li.dataset.ctx)}...</p>
@@ -72,5 +73,5 @@ function initPopover(baseURL, useContextualBacklinks, renderLatex) {
           })
         }
       })
-  })
+  }).catch(() => {}) // index failed to load: no previews, but nothing else should break
 }

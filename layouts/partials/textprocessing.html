@@ -26,9 +26,33 @@
     {{if (hasPrefix . "!")}}
       {{$inner := . | strings.TrimPrefix "![[" | strings.TrimSuffix "]]" }}
       {{$split := split $inner "|"}}
-      {{$path := index $split 0 | relURL}}
-      {{$width := index $split 1}}
-      {{$img := printf "<img src=\"%s\" width=\"%s\" />" $path (default "auto" $width)}}
+      {{$file := index $split 0}}
+      {{$path := $file | relURL}}
+      {{/* ![[img.png|300]] sets width, ![[img.png|alt text]] sets alt (Obsidian). Without alt
+           the <img> had none at all, which fails Lighthouse "image-alt". */}}
+      {{$alt := path.BaseName $file | replaceRE "[-_]+" " "}}
+      {{$width := ""}}
+      {{range after 1 $split}}
+        {{if findRE `^\d+$` .}}{{$width = .}}{{else}}{{$alt = .}}{{end}}
+      {{end}}
+      {{/* Compute a matching height from the file's intrinsic size, same reasoning as
+           _markup/render-image.html: a width with no height leaves no aspect ratio for
+           the browser to reserve and the image shifts the layout once it loads. */}}
+      {{$dims := ""}}
+      {{if ne $width ""}}
+        {{$res := $page.Resources.GetMatch $file}}
+        {{$iw := 0}}{{$ih := 0}}
+        {{if $res}}
+          {{if eq $res.ResourceType "image"}}{{$iw = $res.Width}}{{$ih = $res.Height}}{{end}}
+        {{else}}
+          {{/* Page-bundle resources use resources.Get; plain /static files need images.Config
+               instead (resources.Get only sees assets/, not static/ — see render-image.html). */}}
+          {{$rooted := cond (hasPrefix $file "/") $file (print "/" $file)}}
+          {{with try (images.Config (print "static" $rooted))}}{{if not .Err}}{{$iw = .Value.Width}}{{$ih = .Value.Height}}{{end}}{{end}}
+        {{end}}
+        {{if and $iw $ih}}{{$dims = printf " width=\"%s\" height=\"%d\"" $width (int (math.Round (mul $ih (div (float $width) $iw))))}}{{else}}{{$dims = printf " width=\"%s\"" $width}}{{end}}
+      {{end}}
+      {{$img := printf "<img src=\"%s\" alt=\"%s\"%s loading=\"lazy\" decoding=\"async\">" $path ($alt | htmlEscape) $dims}}
       {{$content = replace $content . $img}}
     {{else}}
       {{$inner := . | strings.TrimPrefix "[[" | strings.TrimSuffix "]]" }}
@@ -38,7 +62,8 @@
       {{$title := index $reference 0}}
       {{$block := default "" (index $reference 1)}}
       {{$block = strings.TrimRight "/" (cond (eq $block "") $block (printf "#%s" $block)) | urlize | lower}}
-      {{$href := strings.TrimRight "/" ($page.GetPage $title).RelPermalink}}
+      {{$href := ""}}
+      {{with $page.GetPage $title}}{{$href = .RelPermalink}}{{end}}
       {{$display := default $title (index $split 1)}}
       {{if not $href}}
         {{/* Not an <a>: a link without an href is not crawlable and fails
@@ -46,8 +71,10 @@
         {{$link := printf "<span class=\"internal-link broken\">%s</span>" $display}}
         {{$content = replace $content . $link}}
       {{else}}
+        {{/* href keeps its trailing slash (a bare /about is a 308 redirect on Cloudflare Pages);
+             data-src is the slash-less key popover.js looks up. */}}
         {{$fullhref := printf "%s%s" $href $block }}
-        {{$link := printf "<a href=\"%s\" rel=\"noopener\" class=\"internal-link\" data-src=\"%s\">%s</a>" $fullhref $href $display}}
+        {{$link := printf "<a href=\"%s\" rel=\"noopener\" class=\"internal-link\" data-src=\"%s\">%s</a>" $fullhref (strings.TrimRight "/" $href) $display}}
         {{$content = replace $content . $link}}
       {{end}}
     {{end}}
@@ -55,7 +82,7 @@
 {{end}}
 
 {{/* Add jumpable anchors */}}
-{{ $content = $content | replaceRE "(<h[1-9] id=\"([^\"]+)\">)(.+)(</h[1-9]>)" `<a href="#${2}">${1}<span class="hanchor" ariaLabel="Anchor"># </span>${3}${4}</a>` }}
+{{ $content = $content | replaceRE "(<h[1-9] id=\"([^\"]+)\">)(.+)(</h[1-9]>)" `<a href="#${2}">${1}<span class="hanchor" aria-hidden="true"># </span>${3}${4}</a>` }}
 
 {{/* Callouts */}}
 {{if hugo.Data.config.enableCallouts}}

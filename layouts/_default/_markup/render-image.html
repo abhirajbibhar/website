@@ -1,9 +1,48 @@
-{{$src := .Destination | safeURL }}
-{{$width := index (split .Text "|") 1 | default "auto" }}
-{{$external := strings.HasPrefix $src "http" }}
-{{- if $external -}}
-<img src="{{ $src }}" width="{{ $width }}" alt="{{ .Text }}" {{ with .Title }} title="{{ . }}" {{ end }} />
-{{- else -}}
-{{$fixedUrl := (cond (hasPrefix $src "/") $src (print "/" $src)) | urlize}}
-<img src="{{.Page.Site.BaseURL}}{{ $fixedUrl }}" width="{{ $width }}" alt="{{ .Text }}" {{ with .Title }} title="{{ . }}" {{ end }} />
+{{- /* Markdown image renderer.
+     Alt text may carry a width Obsidian-style: ![alt|300](img.png). Only the part before
+     "|" is the alt text (the old renderer leaked "|300" into it), and width is emitted only
+     when numeric (it used to write width="auto", which is not a valid value).
+     Source resolution:
+       - scheme / protocol-relative URL  -> as-is
+       - file next to the page (page bundle: content/posts/x/index.md + fig.png) -> that resource
+       - otherwise a site path (/img/a.png or img/a.png) -> relURL, so it follows whichever
+         host serves the page (the old BaseURL + "/" prefix produced "https://host//img/a.png"
+         and pinned previews to production).
+     Intrinsic width/height are added when known so the browser reserves space (no layout
+     shift). The first image on a page loads eagerly at high priority (it is usually the LCP
+     element); the rest are lazy. */ -}}
+{{- $parts := split .PlainText "|" -}}
+{{- $alt := index $parts 0 | strings.TrimSpace -}}
+{{- $width := "" -}}
+{{- if gt (len $parts) 1 -}}
+  {{- $w := index $parts 1 | strings.TrimSpace -}}
+  {{- if findRE `^\d+$` $w -}}{{- $width = $w -}}{{- end -}}
 {{- end -}}
+{{- $dest := .Destination -}}
+{{- $src := "" -}}
+{{- $iw := 0 -}}
+{{- $ih := 0 -}}
+{{- if or (findRE `^[a-zA-Z][a-zA-Z0-9+.-]*:` $dest) (hasPrefix $dest "//") -}}
+  {{- $src = $dest -}}
+{{- else -}}
+  {{- with $.Page.Resources.GetMatch $dest -}}
+    {{- $src = .RelPermalink -}}
+    {{- if eq .ResourceType "image" -}}{{- $iw = .Width -}}{{- $ih = .Height -}}{{- end -}}
+  {{- else -}}
+    {{- $rooted := cond (hasPrefix $dest "/") $dest (print "/" $dest) -}}
+    {{- $src = $rooted | relURL -}}
+    {{- with try (images.Config (print "static" $rooted)) -}}
+      {{- if not .Err -}}{{- $iw = .Value.Width -}}{{- $ih = .Value.Height -}}{{- end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- /* An explicit |N width with no matching height left no aspect ratio for the browser
+       to reserve, so the layout shifted once the real image loaded ("Unsized image
+       element" in Lighthouse's CLS audit). Scale the intrinsic height to match whenever
+       it's known. */ -}}
+<img src="{{ $src | safeURL }}" alt="{{ $alt }}"
+  {{- if $width }} width="{{ $width }}"
+    {{- if and $iw $ih }} height="{{ int (math.Round (mul $ih (div (float $width) $iw))) }}"{{ end }}
+  {{- else }}{{ if $iw }} width="{{ $iw }}" height="{{ $ih }}"{{ end }}{{ end }}
+  {{- with .Title }} title="{{ . }}"{{ end }}
+  {{- if eq .Ordinal 0 }} fetchpriority="high"{{ else }} loading="lazy"{{ end }} decoding="async">

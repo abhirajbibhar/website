@@ -6,14 +6,18 @@
   grid-template-columns: 280px 1fr;
   gap: 3em;
   align-items: start;
-  padding: 2em 0;
+  /* margin-top: 1em, explicit for the same reason as .home-header above — this
+     was previously an accidental inheritance from the generic `header` rule in
+     base.scss, not a value anyone chose for this component. Padding stays 0 at
+     the top (the border-bottom only needs space below the row, not above it). */
+  margin: 1em 0 0;
+  padding: 0 0 2em;
   border-bottom: 1px solid var(--outlinegray);
-  margin-bottom: 0;
 
   @media (max-width: 780px) {
     grid-template-columns: 1fr;
     gap: 1.5em;
-    padding: 1.5em 0;
+    padding: 0 0 1.5em;
     align-items: center;
   }
 }
@@ -34,6 +38,7 @@
 
   img {
     width: 100%;
+    height: auto; /* width/height attributes reserve the space; CSS sizes the image */
     aspect-ratio: 5 / 6;
     object-fit: cover;
     display: block;
@@ -146,7 +151,13 @@
 // Home page header
 .home-header {
   display: block;
-  margin-bottom: 2em;
+  /* Explicit, rather than relying on the generic `header { margin: 1em 0 2em }`
+     rule in base.scss (written for the unused legacy partials/header.html):
+     that rule applied here only because .home-header happens to also be a
+     <header> element, which made this margin-top easy to lose by accident.
+     article > h1 (base.scss) matches this value so every other page's first
+     heading lines up with this one. */
+  margin: 1em 0 2em;
 
   & > h1 {
     margin: 0 0 0.3em;
@@ -155,7 +166,7 @@
 
   & > .subtitle {
     margin: 0;
-    opacity: 0.6;
+    color: var(--muted);
     font-size: 1.1em;
   }
 }

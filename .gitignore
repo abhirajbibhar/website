@@ -5,6 +5,5 @@ resources
 .hugo_build.lock
 node_modules
 design
-notes
+/notes
 task.txt
-content\notes

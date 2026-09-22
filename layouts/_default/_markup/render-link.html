@@ -1,16 +1,38 @@
-{{$trimmed := strings.TrimSuffix ".md" (.Destination | safeURL)}}
-{{$dashedurl := replace $trimmed "%20" "-" }}
-{{$external := strings.HasPrefix $dashedurl "http" }}
-{{- if $external -}}
-<a href="{{ $dashedurl }}" rel="noopener">{{ .Text | safeHTML }}</a>
+{{- /* Markdown link renderer. Cases, first match wins:
+     1. Has a URL scheme (http:, https:, mailto:, tel:, ...) or is protocol-relative (//host)
+        -> passed through untouched. (The old renderer also stripped ".md" and turned "%20"
+           into "-" for external URLs, which broke e.g. .../README.md and .../my%20file.pdf,
+           and treated mailto:/tel: as page paths, emitting an <a> with no href.)
+     2. Fragment only (#section) -> same-page anchor.
+     3. Site path that resolves to a page -> internal link (gets a hover preview via data-src).
+     4. Site path with a file extension that is NOT a page (/img/a.png, /files/cv.pdf) -> plain
+        link to the static file.
+     5. Anything else is an unresolved page reference -> <span class="internal-link broken">.
+        A span, not an <a>: an anchor without href is not crawlable (Lighthouse) or focusable.
+        A build warning names the page and target so it can be fixed. */ -}}
+{{- $dest := .Destination -}}
+{{- $title := "" -}}
+{{- with .Title }}{{ $title = printf " title=\"%s\"" (. | htmlEscape) }}{{ end -}}
+{{- if or (findRE `^[a-zA-Z][a-zA-Z0-9+.-]*:` $dest) (hasPrefix $dest "//") -}}
+<a href="{{ $dest | safeURL }}"{{ if hasPrefix $dest "http" }} rel="noopener"{{ end }}{{ $title | safeHTMLAttr }}>{{ .Text | safeHTML }}</a>
+{{- else if hasPrefix $dest "#" -}}
+<a href="{{ $dest | safeURL }}"{{ $title | safeHTMLAttr }}>{{ .Text | safeHTML }}</a>
 {{- else -}}
-{{$spacedurl := replace $trimmed "%20" " " }}
-{{$fixedUrl := (cond (hasPrefix $spacedurl "/") $spacedurl (print "/" $spacedurl)) | urlize}}
-{{$nonexistent := eq (.Page.GetPage $spacedurl).RelPermalink ""}}
-{{$rooted := default $spacedurl ((.Page.GetPage $spacedurl).RelPermalink) }}
-<a
-  {{if not $nonexistent}}href="{{$rooted}}"{{end}}
-  rel="noopener" class="internal-link{{if $nonexistent}} broken{{end}}"
-  data-src="{{$rooted}}">{{- .Text | safeHTML -}}
-</a>
+  {{- $path := $dest -}}
+  {{- $frag := "" -}}
+  {{- with findRE `#.*$` $dest -}}
+    {{- $frag = index . 0 -}}
+    {{- $path = strings.TrimSuffix $frag $dest -}}
+  {{- end -}}
+  {{- $lookup := replace (strings.TrimSuffix ".md" $path) "%20" " " -}}
+  {{- $target := "" -}}
+  {{- if $lookup -}}{{- with $.Page.GetPage $lookup -}}{{- $target = . -}}{{- end -}}{{- end -}}
+  {{- if $target -}}
+<a href="{{ $target.RelPermalink }}{{ $frag | safeURL }}" rel="noopener" class="internal-link" data-src="{{ $target.RelPermalink }}"{{ $title | safeHTMLAttr }}>{{- .Text | safeHTML -}}</a>
+  {{- else if findRE `\.[A-Za-z0-9]{1,8}$` $path -}}
+<a href="{{ cond (hasPrefix $dest "/") ($dest | relURL) $dest | safeURL }}"{{ $title | safeHTMLAttr }}>{{ .Text | safeHTML }}</a>
+  {{- else -}}
+    {{- warnf "render-link: %q in %s does not resolve to a page" $dest $.Page.Path -}}
+<span class="internal-link broken">{{ .Text | safeHTML }}</span>
+  {{- end -}}
 {{- end -}}

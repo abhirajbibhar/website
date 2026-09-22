@@ -1,5 +1,8 @@
 const userPref = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
-const currentTheme = localStorage.getItem('theme') ?? userPref
+// localStorage throws when storage is blocked; without a guard the whole script died and
+// the theme switch stopped working.
+const readTheme = () => { try { return localStorage.getItem('theme') } catch (e) { return null } }
+const currentTheme = readTheme() ?? userPref
 /* The light syntax theme is inlined in <head>; the dark theme is injected only
    when dark mode is active, instead of shipping a second render-blocking
    stylesheet for every visitor. */
@@ -28,7 +31,7 @@ if (currentTheme) {
 
 const applyTheme = (theme) => {
   document.documentElement.setAttribute('saved-theme', theme);
-  localStorage.setItem('theme', theme);
+  try { localStorage.setItem('theme', theme) } catch (e) {}
   applySyntaxTheme(theme);
 
   // Sync the new switch toggle (nav bar)

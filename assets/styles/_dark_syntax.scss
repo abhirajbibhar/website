@@ -6,8 +6,8 @@
 /* LineTableTD */ .chroma .lntd { vertical-align: top; padding: 0; margin: 0; border: 0; }
 /* LineTable */ .chroma .lntable { border-spacing: 0; padding: 0; margin: 0; border: 0; }
 /* LineHighlight */ .chroma .hl { background-color: #ffffcc }
-/* LineNumbersTable */ .chroma .lnt { white-space: pre; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #7f7f7f }
-/* LineNumbers */ .chroma .ln { white-space: pre; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #7f7f7f }
+/* LineNumbersTable */ .chroma .lnt { white-space: pre; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #909090 }
+/* LineNumbers */ .chroma .ln { white-space: pre; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #909090 }
 /* Line */ .chroma .line { display: flex; }
 /* Keyword */ .chroma .k { color: #ff79c6 }
 /* KeywordConstant */ .chroma .kc { color: #ff79c6 }
@@ -63,11 +63,11 @@
 /* Operator */ .chroma .o { color: #ff79c6 }
 /* OperatorWord */ .chroma .ow { color: #ff79c6 }
 /* Punctuation */ .chroma .p {  }
-/* Comment */ .chroma .c { color: #6272a4 }
-/* CommentHashbang */ .chroma .ch { color: #6272a4 }
-/* CommentMultiline */ .chroma .cm { color: #6272a4 }
-/* CommentSingle */ .chroma .c1 { color: #6272a4 }
-/* CommentSpecial */ .chroma .cs { color: #6272a4 }
+/* Comment */ .chroma .c { color: #828fb7 }
+/* CommentHashbang */ .chroma .ch { color: #828fb7 }
+/* CommentMultiline */ .chroma .cm { color: #828fb7 }
+/* CommentSingle */ .chroma .c1 { color: #828fb7 }
+/* CommentSpecial */ .chroma .cs { color: #828fb7 }
 /* CommentPreproc */ .chroma .cp { color: #ff79c6 }
 /* CommentPreprocFile */ .chroma .cpf { color: #ff79c6 }
 /* Generic */ .chroma .g {  }
@@ -76,7 +76,7 @@
 /* GenericError */ .chroma .gr {  }
 /* GenericHeading */ .chroma .gh { font-weight: bold }
 /* GenericInserted */ .chroma .gi { color: #50fa7b; font-weight: bold }
-/* GenericOutput */ .chroma .go { color: #44475a }
+/* GenericOutput */ .chroma .go { color: #8b8fa7 }
 /* GenericPrompt */ .chroma .gp {  }
 /* GenericStrong */ .chroma .gs {  }
 /* GenericSubheading */ .chroma .gu { font-weight: bold }

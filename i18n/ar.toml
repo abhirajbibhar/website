@@ -63,3 +63,15 @@ other = "الفهرس"
 
 [copyright]
 other = "صُمم بواسطة {{ .name }} باستخدام <a href='https://github.com/jackyzha0/quartz'>كوارتز</a>، {{ .year }} ©"
+
+[primary_nav]
+other = "التنقل الرئيسي"
+
+[menu]
+other = "القائمة"
+
+[account]
+other = "الحساب"
+
+[portrait_alt]
+other = "صورة {{ .name }}"

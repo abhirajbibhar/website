@@ -13,11 +13,13 @@
         {{ i18n "last_updated" }} {{ partial "date-fmt.html" .}} 
           {{ partial "github.html" . }}
       </p>
+      {{ with (.GetTerms "tags") }}
       <ul class="tags">
-          {{ range (.GetTerms "tags") }}
-          <li><a href="{{ .Permalink }}">{{ .LinkTitle | humanize }}</a></li>
+          {{ range . }}
+          <li><a href="{{ .RelPermalink }}">{{ .LinkTitle | humanize }}</a></li>
           {{ end }}
       </ul>
+      {{ end }}
       {{partial "toc.html" .}}
       {{partial "textprocessing.html" . }}
     </article>
