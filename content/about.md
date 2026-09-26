@@ -2,10 +2,10 @@
 title: "About"
 layout: "about"
 role: "Anthropology researcher"
-affiliation: "Department of Sociology and Anthropology"
+# affiliation: "Department of Sociology and Anthropology"
 research_interest: "Digital Anthropology & Governance"
 email: "abhiraj.phd@gmail.com"
-# field: "South Asia"
+supervisor: "Dr Nishanth KS"
 ---
 
 I study Anthropology a discipline that consistently demonstrates and scrutinizes the diverse ways humans construct, interpret, and inhabit their social and cultural worlds. In other words, Anthropology reminds us that there are many ways to be Human.

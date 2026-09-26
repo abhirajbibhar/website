@@ -47,14 +47,15 @@
   font-size: 18px;
 }
 
+
 // Color Scheme 
 :root {
   --light: #faf8f8;
   --dark: #141021;
-  --secondary: #284b63;
+  --secondary: #009BFF;
   --tertiary: #84a59d;
   --visited: #afbfc9;
-  --primary: #f28482;
+  --primary: #FF9800;
   --gray: #4e4e4e;
   /* Secondary/de-emphasised text (dates, subtitle, "last updated"). Replaces the
      old `opacity: 0.5–0.7` dimming, which blended --gray into the background and
@@ -91,10 +92,10 @@
   --dark: #fbfffe !important;
   /* Lightened from #6b879a: internal links sit on their own 15% tint highlight
      (#2f3135), where the old value gave only 3.45:1 contrast. */
-  --secondary: #8fb3c9 !important;
+  --secondary: #FF9800 !important;
   --visited: #4a575e !important;
   --tertiary: #84a59d !important;
-  --primary: #f58382 !important;
+  --primary: #009BFF !important;
   --gray: #d4d4d4 !important;
   --muted: #9f9fa0 !important; /* 6.3:1 on --light, 5.6:1 on --lightgray */
   --lightgray: #292633 !important;

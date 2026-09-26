@@ -66,7 +66,7 @@
 
 .about-hero-text .about-affil {
   color: var(--gray);
-  line-height: 1.6;
+//  line-height: 1.6;
   margin: 0;
 }
 
@@ -86,6 +86,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.5em;
+  font-family: var(--font-body);
 }
 
 .about-hero-meta .meta-row {
@@ -97,7 +98,7 @@
 
 .about-hero-meta dt {
   margin: 0;
-  color: var(--secondary);
+  color: var(--dark);
 }
 
 .about-hero-meta dd {
@@ -114,6 +115,7 @@
 .about-hero-meta dd a:hover {
   color: var(--secondary);
   border-color: var(--secondary);
+  text-decoration: none;
 }
 
 .about-social {
@@ -151,12 +153,6 @@
 // Home page header
 .home-header {
   display: block;
-  /* Explicit, rather than relying on the generic `header { margin: 1em 0 2em }`
-     rule in base.scss (written for the unused legacy partials/header.html):
-     that rule applied here only because .home-header happens to also be a
-     <header> element, which made this margin-top easy to lose by accident.
-     article > h1 (base.scss) matches this value so every other page's first
-     heading lines up with this one. */
   margin: 1em 0 2em;
 
   & > h1 {

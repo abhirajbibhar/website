@@ -12,11 +12,6 @@
     <header class="about-hero">
       <div class="about-hero-portrait">
         <div class="about-hero-frame">
-          {{- /* Portrait is processed from assets/img/profile.jpeg (a copy of the original in
-                 static/img/, which stays put because og:image and any external links point at it).
-                 It was a 1088x1446 / 98 KB JPEG shown at 180-280 px wide. Now: two WebP crops
-                 (~8 KB / ~17 KB), the 5:6 crop baked in, explicit dimensions, and high fetch
-                 priority because this is the page's LCP element. */ -}}
           {{- $name := $data.name | default hugo.Data.config.name -}}
           {{- $alt := i18n "portrait_alt" (dict "name" $name) -}}
           {{- with resources.Get "img/profile.jpeg" -}}
@@ -41,11 +36,11 @@
         <p class="about-affil">{{ . }}</p>
         {{- end }}
 
-        {{- with or .Params.research_interest .Params.email .Params.field }}
+        {{- with or .Params.research_interest .Params.email .Params.supervisor }}
         <dl class="about-hero-meta">
           {{- with $.Params.research_interest }}
           <div class="meta-row">
-            <dt>Research interest</dt>
+            <dt>Research Interest</dt>
             <dd>{{ . }}</dd>
           </div>
           {{- end }}
@@ -55,9 +50,9 @@
             <dd><a href="mailto:{{ . }}">{{ . }}</a></dd>
           </div>
           {{- end }}
-          {{- with $.Params.field }}
+          {{- with $.Params.supervisor }}
           <div class="meta-row">
-            <dt>Field</dt>
+            <dt>Working Under</dt>
             <dd>{{ . }}</dd>
           </div>
           {{- end }}
