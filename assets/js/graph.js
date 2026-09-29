@@ -1,13 +1,13 @@
 async function drawGraph(baseUrl, isHome, pathColors, graphConfig) {
 
   let {
-  depth,
-  enableDrag,
-  enableLegend,
-  enableZoom,
-  opacityScale,
-  scale,
-  repelForce,
+    depth,
+    enableDrag,
+    enableLegend,
+    enableZoom,
+    opacityScale,
+    scale,
+    repelForce,
   fontSize} = graphConfig;
 
   const container = document.getElementById("graph-container")
@@ -104,7 +104,7 @@ async function drawGraph(baseUrl, isHome, pathColors, graphConfig) {
       d3
         .forceLink(data.links)
         .id((d) => d.id)
-        .distance(40),
+        .distance(30), // was 40
     )
     .force("center", d3.forceCenter())
 
@@ -124,7 +124,7 @@ async function drawGraph(baseUrl, isHome, pathColors, graphConfig) {
         .append("circle")
         .attr("cx", -width / 2 + 20)
         .attr("cy", height / 2 - 30 * (i + 1))
-        .attr("r", 6)
+        .attr("r", 5) // was 6
         .style("fill", colour)
       svg
         .append("text")
@@ -144,18 +144,18 @@ async function drawGraph(baseUrl, isHome, pathColors, graphConfig) {
     .join("line")
     .attr("class", "link")
     .attr("stroke", "var(--g-link)")
-    .attr("stroke-width", 2)
+    .attr("stroke-width", 1) // was 2
     .attr("data-source", (d) => d.source.id)
     .attr("data-target", (d) => d.target.id)
 
   // svg groups
   const graphNode = svg.append("g").selectAll("g").data(data.nodes).enter().append("g")
 
-  // calculate radius
+  // calculate radius (smaller base size and slower growth per connection)
   const nodeRadius = (d) => {
     const numOut = index.links[d.id]?.length || 0
     const numIn = index.backlinks[d.id]?.length || 0
-    return 2 + Math.sqrt(numOut + numIn)
+    return 1.5 + Math.sqrt(numOut + numIn) * 0.6 // was 2 + Math.sqrt(numOut + numIn)
   }
 
   // draw individual nodes
@@ -214,12 +214,12 @@ async function drawGraph(baseUrl, isHome, pathColors, graphConfig) {
       linkNodes.transition().duration(200).attr("stroke", "var(--g-link)")
 
       d3.select(this.parentNode)
-      .select("text")
-      .transition()
-      .duration(200)
-      .style('opacity', d3.select(this.parentNode).select('text').attr("opacityOld"))
+        .select("text")
+        .transition()
+        .duration(200)
+        .style('opacity', d3.select(this.parentNode).select('text').attr("opacityOld"))
       .style('font-size', fontSize+'em')
-      .attr('dy', d => nodeRadius(d) + 8 + 'px') // radius is in px
+        .attr('dy', d => nodeRadius(d) + 8 + 'px') // radius is in px
     })
     .call(drag(simulation))
 
