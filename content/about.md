@@ -33,4 +33,5 @@ Most weeks I am some combination of reading, writing, listening to music, trying
 
 This is my portfolio and blog. It collects my working notes, short and occasional long-form posts on how my life and research are going.
 
-- **[Writings](/posts)** — the semi-filtered version of my thought process
+- **[Writings](/posts)** — the semi-filtered version of my thought process.
+- **[post that are private and in draft](notes/ignore-notes.md)** 

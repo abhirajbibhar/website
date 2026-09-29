@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="120 70 700 700" width="512" height="512" xmlns:c2pa="http://c2pa.org/manifest">
-<defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0A1733"/><stop offset="1" stop-color="#0A1733"/></linearGradient>
+<defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4C9AFF"/><stop offset="1" stop-color="#1F63D0"/></linearGradient>
 <clipPath id="c"><rect x="120" y="70" width="700" height="700" rx="150"/></clipPath></defs>
 <g clip-path="url(#c)"><rect x="120" y="70" width="700" height="700" fill="url(#bg)"/><g transform="translate(0,936) scale(0.1,-0.1)" fill="#ffffff" stroke="none"><path d="M4335 8438 c-33 -10 -97 -30 -142 -44 -45 -14 -112 -43 -148 -65
 l-67 -39 -42 25 c-68 40 -240 112 -296 124 -87 19 -191 14 -277 -14 -116 -36
