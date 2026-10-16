@@ -42,10 +42,10 @@
     aspect-ratio: 5 / 6;
     object-fit: cover;
     display: block;
-    border: 1px solid var(--outlinegray);
+    border: 1px solid var(--primary);
     background: var(--lightgray);
     border-radius: 3px;
-    box-shadow: 14px 14px 0 var(--primary);
+    //box-shadow: 8px 8px 0 var(--primary);
   }
 }
 
@@ -206,5 +206,133 @@ hr.footnotes-sep,
         font-style: italic;
       }
     }
+  }
+}
+
+// ============================================================================
+// Background — "Blueprint Aurora"
+// ----------------------------------------------------------------------------
+//  html::before  soft teal / terracotta glow + fine blueprint grid
+//  body::before  scattered shapes (+ ○ △ ◇ □) that snap to grid intersections,
+//                slowly drifting and twinkling
+//  body::after   cursor "flashlight": the grid lights up in the link colour
+//                around the pointer (position set by assets/js/bg-glow.js)
+// Everything is built from the theme variables, so light/dark just work.
+// ============================================================================
+:root {
+  --grid: 32px;
+  --grid-line: color-mix(in srgb, var(--dark) 4.5%, transparent);
+  --grid-line-major: color-mix(in srgb, var(--dark) 7%, transparent);
+  --glow-a: color-mix(in srgb, var(--secondary) 13%, transparent);
+  --glow-b: color-mix(in srgb, var(--primary) 11%, transparent);
+  --shape-color: var(--secondary);
+  --shape-opacity: 0.30;
+}
+
+[saved-theme="dark"] {
+  --grid-line: color-mix(in srgb, var(--dark) 4.5%, transparent);
+  --grid-line-major: color-mix(in srgb, var(--dark) 8%, transparent);
+  --glow-a: color-mix(in srgb, var(--secondary) 11%, transparent);
+  --glow-b: color-mix(in srgb, var(--primary) 8%, transparent);
+  --shape-opacity: 0.34;
+}
+
+html::before,
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* 1 — glow + grid */
+html::before {
+  inset: 0;
+  background:
+    radial-gradient(60vmax 50vmax at 0% 0%, var(--glow-a), transparent 70%),
+    radial-gradient(55vmax 45vmax at 100% 100%, var(--glow-b), transparent 70%),
+    linear-gradient(var(--grid-line-major) 1px, transparent 1px) 0 0 / calc(var(--grid) * 5) calc(var(--grid) * 5),
+    linear-gradient(90deg, var(--grid-line-major) 1px, transparent 1px) 0 0 / calc(var(--grid) * 5) calc(var(--grid) * 5);
+  /* the fine 32px grid is intentionally NOT drawn here — it only appears under the cursor (body::after) */
+  /* keep the middle (where you read) calmer than the edges */
+  -webkit-mask-image: radial-gradient(ellipse 70% 80% at 50% 40%, rgba(0, 0, 0, 0.45), #000 95%);
+  mask-image: radial-gradient(ellipse 70% 80% at 50% 40%, rgba(0, 0, 0, 0.45), #000 95%);
+}
+
+/* 2 — scattered shapes */
+body::before {
+  inset: -64px;
+  background-color: var(--shape-color);
+  opacity: var(--shape-opacity);
+  -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='480' height='480' viewBox='0 0 480 480'><g fill='none' stroke='black' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'><path d='M90 128H102M96 122V134'/><circle cx='352' cy='64' r='5'/><path d='M256 345L263 357.6H249Z'/><circle cx='416' cy='288' r='2.6' fill='black' stroke='none'/></g></svg>"), url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='800' viewBox='0 0 800 800'><g fill='none' stroke='black' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'><path d='M160 90L166 96L160 102L154 96Z'/><rect x='571' y='187' width='10' height='10' rx='1.5'/><path d='M346 512H358M352 506V518'/><circle cx='704' cy='640' r='5'/><circle cx='96' cy='672' r='2.6' fill='black' stroke='none'/></g></svg>");
+  mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='480' height='480' viewBox='0 0 480 480'><g fill='none' stroke='black' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'><path d='M90 128H102M96 122V134'/><circle cx='352' cy='64' r='5'/><path d='M256 345L263 357.6H249Z'/><circle cx='416' cy='288' r='2.6' fill='black' stroke='none'/></g></svg>"), url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='800' viewBox='0 0 800 800'><g fill='none' stroke='black' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'><path d='M160 90L166 96L160 102L154 96Z'/><rect x='571' y='187' width='10' height='10' rx='1.5'/><path d='M346 512H358M352 506V518'/><circle cx='704' cy='640' r='5'/><circle cx='96' cy='672' r='2.6' fill='black' stroke='none'/></g></svg>");
+  -webkit-mask-size: 480px 480px, 800px 800px;
+  mask-size: 480px 480px, 800px 800px;
+  -webkit-mask-position: 0 0, 160px 96px;
+  mask-position: 0 0, 160px 96px;
+  animation: bg-drift 90s ease-in-out infinite alternate, bg-twinkle 9s ease-in-out infinite alternate;
+}
+
+/* 3 — cursor flashlight (only exists where there is a real pointer) */
+body::after {
+  inset: 0;
+  opacity: 0;
+  background:
+    linear-gradient(color-mix(in srgb, var(--secondary) 55%, transparent) 1px, transparent 1px) 0 0 / var(--grid) var(--grid),
+    linear-gradient(90deg, color-mix(in srgb, var(--secondary) 55%, transparent) 1px, transparent 1px) 0 0 / var(--grid) var(--grid);
+  -webkit-mask-image: radial-gradient(circle 230px at var(--mx, -400px) var(--my, -400px), #000 0%, transparent 100%);
+  mask-image: radial-gradient(circle 230px at var(--mx, -400px) var(--my, -400px), #000 0%, transparent 100%);
+  transition: opacity 0.4s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  :root[data-bg-glow="on"] body::after {
+    opacity: 0.85;
+  }
+}
+
+@keyframes bg-drift {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(48px, 32px, 0); }
+}
+
+@keyframes bg-twinkle {
+  from { opacity: calc(var(--shape-opacity) * 0.55); }
+  to   { opacity: var(--shape-opacity); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before { animation: none; }
+  body::after { display: none; }
+}
+
+/* Reader mode and print: a plain page, no decoration */
+:root[reader-mode="on"] html::before,
+:root[reader-mode="on"] body::before,
+:root[reader-mode="on"] body::after {
+  display: none;
+}
+
+@media print {
+  html::before, body::before, body::after { display: none; }
+}
+
+// ── Backlinks + graph container ────────────────────────────
+// Teal-tinted borders (instead of plain outline gray) and a frosted panel so the
+// background grid doesn't run through the cards. Border contrast ~1.6:1 light / ~1.8:1 dark.
+.page-end {
+  & > .backlinks-container > ul > li,
+  & #graph-container {
+    border-color: color-mix(in srgb, var(--secondary) 28%, var(--outlinegray));
+    background: color-mix(in srgb, var(--light) 78%, transparent);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+  }
+
+  & > .backlinks-container > ul > li:hover,
+  & #graph-container:hover {
+    border-color: color-mix(in srgb, var(--secondary) 60%, var(--outlinegray));
   }
 }
