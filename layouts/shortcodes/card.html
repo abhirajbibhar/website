@@ -1,0 +1,42 @@
+{{- /* {{< card title="…" href="/x" image="img/demo/a.svg" alt="…" footer="…" layout="horizontal" level="3" >}}
+       Body text, **markdown** works.
+       {{< card-footer >}} {{< button … >}} {{< /card-footer >}}
+       {{< /card >}}
+       - href turns the whole card into one link (the title is the link, stretched over the card).
+       - image: page-bundle file, assets/ file, static/ path or full URL. alt="" marks it decorative.
+       - footer="…" is plain footer text; use {{< card-footer >}} for buttons or richer content.
+       - level sets the title's heading rank (default 3) so the outline never skips a level. */ -}}
+{{- $title := .Get "title" -}}
+{{- $href := .Get "href" -}}
+{{- $image := or (.Get "image") (.Get "img") -}}
+{{- $level := int (.Get "level" | default 3) -}}
+{{- $horizontal := eq (printf "%v" (.Get "layout")) "horizontal" -}}
+{{- $sentinel := "<!--card-footer-->" -}}
+{{- $parts := split .Inner $sentinel -}}
+{{- $body := index $parts 0 | strings.TrimSpace -}}
+{{- $footer := "" -}}
+{{- if gt (len $parts) 1 -}}{{- $footer = index $parts 1 | strings.TrimSpace -}}{{- end -}}
+{{- with .Get "footer" -}}{{- $footer = $.Page.RenderString (dict "display" "inline") . -}}{{- end -}}
+<article class="card{{ if $horizontal }} card-horizontal{{ end }}{{ if and $href $title }} card-linked{{ end }}{{ with .Get "class" }} {{ . }}{{ end }}">
+  {{- with $image }}
+  <div class="card-media">{{ partial "ui/img.html" (dict "page" $.Page "src" . "alt" ($.Get "alt" | default "")) }}</div>
+  {{- end }}
+  <div class="card-content">
+    {{- if or $title $body }}
+    <div class="card-body">
+      {{- with $title }}
+      {{ printf "<h%d class=\"card-title\">" $level | safeHTML }}
+      {{- if $href }}<a class="card-link" href="{{ partial "ui/href.html" $href | safeURL }}">{{ $.Page.RenderString (dict "display" "inline") . }}</a>
+      {{- else }}{{ $.Page.RenderString (dict "display" "inline") . }}{{ end -}}
+      {{ printf "</h%d>" $level | safeHTML }}
+      {{- end }}
+      {{- with $body }}
+      <div class="card-text">{{ $.Page.RenderString . }}</div>
+      {{- end }}
+    </div>
+    {{- end }}
+    {{- with $footer }}
+    <div class="card-footer">{{ . | safeHTML }}</div>
+    {{- end }}
+  </div>
+</article>

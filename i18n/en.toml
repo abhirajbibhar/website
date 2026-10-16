@@ -75,3 +75,33 @@ other = "Account"
 
 [portrait_alt]
 other = "Portrait of {{ .name }}"
+
+[carousel]
+other = "Carousel"
+
+[carousel_slides]
+other = "Slides"
+
+[carousel_prev]
+other = "Previous slide"
+
+[carousel_next]
+other = "Next slide"
+
+[carousel_goto]
+other = "Go to slide {{ .n }}"
+
+[carousel_slide_of]
+other = "Slide {{ .n }} of {{ .total }}"
+
+[form_send]
+other = "Send"
+
+[form_sending]
+other = "Sending…"
+
+[form_success]
+other = "Thanks, your message was sent."
+
+[form_error]
+other = "Something went wrong and your message was not sent. Please try again."

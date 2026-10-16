@@ -1,0 +1,4 @@
+{{- /* Footer slot for {{< card >}}. The card splits its content on the marker below and places
+       everything after it in the footer band. Put buttons, links or short text inside. */ -}}
+{{- "<!--card-footer-->" | safeHTML -}}
+{{- $.Page.RenderString (dict "display" "inline") (strings.TrimSpace .Inner) -}}

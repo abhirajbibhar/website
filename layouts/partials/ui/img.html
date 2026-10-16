@@ -1,0 +1,34 @@
+{{- /* <img> for components (card media, carousel slides). Mirrors render-image.html's source
+       resolution so the same paths work everywhere:
+         - scheme / protocol-relative URL            -> as-is
+         - file next to the page (page bundle)       -> that resource
+         - file under assets/ (e.g. img/profile.jpg) -> that resource
+         - otherwise a site path under static/       -> relURL
+       Intrinsic width/height are added when known so the browser reserves space.
+       Context: dict "page" PAGE "src" STRING "alt" STRING ["class" STRING] ["eager" BOOL] */ -}}
+{{- $page := .page -}}
+{{- $dest := .src -}}
+{{- $src := "" -}}
+{{- $iw := 0 -}}
+{{- $ih := 0 -}}
+{{- if or (findRE `^[a-zA-Z][a-zA-Z0-9+.-]*:` $dest) (hasPrefix $dest "//") -}}
+  {{- $src = $dest -}}
+{{- else -}}
+  {{- with $page.Resources.GetMatch $dest -}}
+    {{- $src = .RelPermalink -}}
+    {{- if eq .ResourceType "image" -}}{{- $iw = .Width -}}{{- $ih = .Height -}}{{- end -}}
+  {{- else with resources.Get (strings.TrimPrefix "/" $dest) -}}
+    {{- $src = .RelPermalink -}}
+    {{- if eq .ResourceType "image" -}}{{- $iw = .Width -}}{{- $ih = .Height -}}{{- end -}}
+  {{- else -}}
+    {{- $rooted := cond (hasPrefix $dest "/") $dest (print "/" $dest) -}}
+    {{- $src = $rooted | relURL -}}
+    {{- with try (images.Config (print "static" $rooted)) -}}
+      {{- if not .Err -}}{{- $iw = .Value.Width -}}{{- $ih = .Value.Height -}}{{- end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+<img src="{{ $src | safeURL }}" alt="{{ .alt }}"
+  {{- with .class }} class="{{ . }}"{{ end }}
+  {{- if $iw }} width="{{ $iw }}" height="{{ $ih }}"{{ end }}
+  {{- if .eager }} fetchpriority="high"{{ else }} loading="lazy"{{ end }} decoding="async">

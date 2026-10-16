@@ -1,0 +1,36 @@
+{{- /* {{< carousel per-view="1|2|3" gap="1em" ratio="16/9" aria-label="…" >}}
+         {{< slide src="img/demo/a.svg" alt="…" >}}Caption{{< /slide >}}
+         {{< slide >}} {{< card … >}} {{< /slide >}}
+       {{< /carousel >}}
+       Native scroll-snap does the scrolling, so it works by touch, trackpad and keyboard even
+       without JS; assets/js/components.js only wires the arrows and dots (everything is
+       rendered here so the SPA router's DOM morphing cannot lose it). per-view collapses to 1
+       on narrow screens. ratio is the shape of image slides. */ -}}
+{{- $label := .Get "aria-label" | default (.Get "label") | default (i18n "carousel") -}}
+{{- $pv := math.Min 4 (math.Max 1 (int (.Get "per-view" | default 1))) | int -}}
+{{- /* gap and ratio go into a style attribute: accept only plain CSS lengths / ratios. */ -}}
+{{- $gap := .Get "gap" | default "1em" | string -}}
+{{- if not (findRE `^\d+(\.\d+)?(px|em|rem|%)$` $gap) }}{{ $gap = "1em" }}{{ end -}}
+{{- $ratio := .Get "ratio" | default "16 / 9" | string -}}
+{{- if not (findRE `^\d+(\.\d+)?\s*/\s*\d+(\.\d+)?$` $ratio) }}{{ $ratio = "16 / 9" }}{{ end -}}
+{{- $n := strings.Count "data-carousel-slide" .Inner -}}
+{{- $inner := replace .Inner "__SLIDE_TOTAL__" (string $n) -}}
+<section class="carousel{{ with .Get "class" }} {{ . }}{{ end }}" data-carousel role="region" aria-roledescription="carousel" aria-label="{{ $label }}"
+  style="{{ printf "--per-view-wide: %d; --carousel-gap: %s; --slide-ratio: %s" $pv $gap $ratio | safeCSS }}">
+  <div class="carousel-track" tabindex="0" aria-label="{{ i18n "carousel_slides" }}">{{ $inner | safeHTML }}</div>
+  {{- if gt $n 1 }}
+  <div class="carousel-controls" hidden>
+    <button type="button" class="carousel-btn" data-carousel-prev aria-label="{{ i18n "carousel_prev" }}" disabled>
+      <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"/></svg>
+    </button>
+    <div class="carousel-dots">
+      {{- range seq $n }}
+      <button type="button" class="carousel-dot" data-carousel-goto="{{ sub . 1 }}" aria-label="{{ i18n "carousel_goto" (dict "n" .) }}"></button>
+      {{- end }}
+    </div>
+    <button type="button" class="carousel-btn" data-carousel-next aria-label="{{ i18n "carousel_next" }}">
+      <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></svg>
+    </button>
+  </div>
+  {{- end }}
+</section>

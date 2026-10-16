@@ -1,0 +1,27 @@
+{{- /* {{< form action="https://formspree.io/f/YOUR_ID" submit="Send message" success="…" error="…" >}}
+         {{< field name="name" label="Your name" required="true" >}}
+         {{< field name="email" type="email" label="Email" required="true" >}}
+         {{< field name="message" type="textarea" label="Message" rows="6" >}}
+       {{< /form >}}
+       The site is static, so the form posts to an endpoint service (Formspree, Web3Forms,
+       Basin, a Cloudflare Worker …). With JS it submits in place and reports the result under
+       the button; without JS it falls back to a normal POST. Set ajax="false" to always use
+       the normal POST. A hidden honeypot field (_gotcha) quietly drops most bot posts.
+       submit-style sets the submit button style (primary by default). */ -}}
+{{- $action := .Get "action" -}}
+{{- if not $action }}{{ warnf "form shortcode on page %q has no action=\"…\" endpoint" .Page.Path }}{{ end -}}
+{{- $ajax := ne (printf "%v" (.Get "ajax")) "false" -}}
+{{- $submit := .Get "submit" | default (i18n "form_send") -}}
+<form class="form{{ with .Get "class" }} {{ . }}{{ end }}" method="{{ .Get "method" | default "post" }}" action="{{ $action }}"
+  {{- with .Get "id" }} id="{{ . }}"{{ end }}
+  data-form data-ajax="{{ $ajax }}"
+  data-msg-sending="{{ i18n "form_sending" }}"
+  data-msg-success="{{ .Get "success" | default (i18n "form_success") }}"
+  data-msg-error="{{ .Get "error" | default (i18n "form_error") }}">
+  {{ .Inner | safeHTML }}
+  <div class="form-hp" aria-hidden="true"><label>Leave this field empty<input type="text" name="_gotcha" tabindex="-1" autocomplete="off"></label></div>
+  <div class="form-actions">
+    {{ partial "ui/button.html" (dict "label" $submit "type" "submit" "style" (.Get "submit-style" | default "primary")) }}
+  </div>
+  <p class="form-status" role="status" aria-live="polite" data-form-status></p>
+</form>

@@ -1,0 +1,38 @@
+{{- /* Button / link-button. One partial so the shortcode, the form submit and any layout
+       render identical markup.
+       Context (dict): label (HTML, optional), href, style (primary|secondary|ghost),
+       size (sm|md|lg), icon (a name from icon.html), type (button|submit|reset),
+       newtab ("auto"|"true"|"false", default auto), disabled (bool), id, class, ariaLabel, name, value.
+       With href it renders <a>, without it a real <button>. External web links open in a
+       new tab with rel="noopener noreferrer" unless newtab is "false". */ -}}
+{{- $style := .style | default "primary" -}}
+{{- $size := .size | default "md" -}}
+{{- $href := .href | default "" -}}
+{{- $disabled := .disabled | default false -}}
+{{- $isWeb := and $href (findRE `^(https?:)?//` $href) -}}
+{{- $nt := .newtab | default "auto" -}}
+{{- $newtab := cond (eq $nt "auto") (and $isWeb (not (hasPrefix $href site.BaseURL))) (eq $nt "true") -}}
+{{- $classes := printf "btn btn-%s btn-%s" $style $size -}}
+{{- if and (not .label) .icon }}{{ $classes = print $classes " btn-icon" }}{{ end -}}
+{{- with .class }}{{ $classes = print $classes " " . }}{{ end -}}
+{{- if $href -}}
+<a class="{{ $classes }}"
+  {{- if $disabled }} role="link" aria-disabled="true" tabindex="-1"
+  {{- else }} href="{{ partial "ui/href.html" $href | safeURL }}"{{ end }}
+  {{- if and $newtab (not $disabled) }} target="_blank" rel="noopener noreferrer"{{ end }}
+  {{- with .id }} id="{{ . }}"{{ end }}
+  {{- with .ariaLabel }} aria-label="{{ . }}"{{ end }}>
+  {{- with .icon }}{{ partial "icon.html" . }}{{ end }}
+  {{- with .label }}<span>{{ . }}</span>{{ end -}}
+</a>
+{{- else -}}
+<button class="{{ $classes }}" type="{{ .type | default "button" }}"
+  {{- if $disabled }} disabled{{ end }}
+  {{- with .id }} id="{{ . }}"{{ end }}
+  {{- with .name }} name="{{ . }}"{{ end }}
+  {{- with .value }} value="{{ . }}"{{ end }}
+  {{- with .ariaLabel }} aria-label="{{ . }}"{{ end }}>
+  {{- with .icon }}{{ partial "icon.html" . }}{{ end }}
+  {{- with .label }}<span>{{ . }}</span>{{ end -}}
+</button>
+{{- end -}}

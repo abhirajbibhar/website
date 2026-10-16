@@ -1,0 +1,660 @@
+// UI components: button, card, form fields, carousel.
+//
+// Built only from the site's own tokens (--primary, --secondary, --light, --dark, --gray,
+// --muted, --lightgray, --outlinegray, --font-*), so light/dark mode and any scheme in
+// themes/ carry over without extra work. The few tokens below are component-only.
+//
+// Loaded automatically: head.html concatenates every styles/[!_]*.scss, and `components`
+// sorts before `custom`, so custom.scss can still override anything here.
+
+:root {
+  --ui-radius: 4px; // between the portrait frame (3px) and the social icons (5px)
+  --ui-focus: var(--secondary);
+  // Text colour on a --primary fill. --primary is light orange in light mode and blue in
+  // dark mode, so the text flips the other way to keep >= 4.5:1 contrast. If you switch
+  // to another scheme from themes/, check this pair.
+  --ui-primary-fg: var(--dark);
+  --ui-danger: #b3261e; // 6.4:1 on --light
+  --ui-success: #1e7a46; // 5.4:1 on --light
+}
+
+[saved-theme="dark"] {
+  --ui-primary-fg: var(--light);
+  --ui-danger: #f2837c;
+  --ui-success: #6fcf97;
+}
+
+// ── Button ─────────────────────────────────────────────────
+// <a> or <button>, same look. The extra `!important`s on colour exist only because
+// base.scss gives every `a:hover` an !important colour.
+.btn {
+  --btn-bg: transparent;
+  --btn-fg: var(--dark);
+  --btn-bd: var(--outlinegray);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  box-sizing: border-box;
+  min-height: 2.4em;
+  margin: 0;
+  padding: 0.45em 1em;
+  font-family: var(--font-body);
+  font-size: 1em;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-align: center;
+  text-decoration: none;
+  color: var(--btn-fg);
+  background: var(--btn-bg);
+  border: 1px solid var(--btn-bd);
+  border-radius: var(--ui-radius);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease,
+    filter 0.2s ease;
+
+  svg {
+    width: 1.1em;
+    height: 1.1em;
+    flex: none;
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ui-focus);
+    outline-offset: 2px;
+  }
+
+  &[disabled],
+  &[aria-disabled="true"] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+a.btn,
+a.btn:visited,
+a.btn:hover,
+a.btn:focus {
+  color: var(--btn-fg) !important;
+}
+
+.btn-primary {
+  --btn-bg: var(--primary);
+  --btn-fg: var(--ui-primary-fg);
+  --btn-bd: var(--primary);
+
+  &:hover {
+    filter: brightness(0.92);
+  }
+}
+
+.btn-secondary {
+  &:hover {
+    --btn-fg: var(--secondary);
+    --btn-bd: var(--secondary);
+  }
+}
+
+.btn-ghost {
+  --btn-fg: var(--secondary);
+  --btn-bd: transparent;
+
+  &:hover {
+    --btn-bg: var(--hover);
+  }
+}
+
+.btn-sm {
+  min-height: 2em;
+  padding: 0.25em 0.75em;
+  font-size: 0.85em;
+}
+
+.btn-lg {
+  padding: 0.6em 1.4em;
+  font-size: 1.15em;
+}
+
+.btn-icon {
+  padding-inline: 0.55em;
+  aspect-ratio: 1;
+}
+
+.btn-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6em;
+  align-items: center;
+  margin: 1em 0;
+}
+
+// ── Card ───────────────────────────────────────────────────
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  margin: 1.25em 0;
+  overflow: hidden;
+  font-family: var(--font-body); // base.scss sets fonts per element, not on body
+  color: var(--gray);
+  background: var(--light);
+  border: 1px solid var(--outlinegray);
+  border-radius: 3px; // same as the portrait frame
+  transition: border-color 0.2s ease;
+
+  .card-media {
+    background: var(--lightgray);
+    border-bottom: 1px solid var(--outlinegray);
+
+    img {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      margin: 0; // base.scss gives every img `margin: 1em 0`
+      border-radius: 0; // the card's overflow:hidden rounds the corners
+    }
+  }
+
+  .card-content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .card-body {
+    flex: 1;
+    padding: 1em 1.1em;
+  }
+
+  .card-title {
+    margin: 0 0 0.35em;
+    padding: 0;
+    font-size: 1.2em;
+    line-height: 1.25;
+
+    a {
+      font-weight: 600;
+      color: var(--dark);
+      text-decoration: none;
+    }
+  }
+
+  .card-text {
+    line-height: 1.5;
+
+    p {
+      margin: 0 0 0.6em;
+      font-size: 0.95em;
+      overflow-wrap: anywhere;
+    }
+
+    > :last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .card-footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6em 0.8em;
+    align-items: center;
+    padding: 0.6em 1.1em;
+    font-size: 0.85em;
+    color: var(--muted);
+    background: var(--lightgray);
+    border-top: 1px solid var(--outlinegray);
+
+    // Buttons and links in the footer stay clickable above the stretched title link.
+    a,
+    button {
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn-group {
+      margin: 0;
+    }
+  }
+}
+
+// Whole card is the link: the title anchor stretches over it.
+.card-linked {
+  .card-link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  &:hover {
+    border-color: var(--secondary);
+  }
+
+  .card-link:focus-visible {
+    outline: none;
+
+    &::after {
+      outline: 2px solid var(--ui-focus);
+      outline-offset: 2px;
+      border-radius: 3px;
+    }
+  }
+}
+
+.card-horizontal {
+  @media (min-width: 781px) {
+    flex-direction: row;
+
+    .card-media {
+      flex: 0 0 38%;
+      border-bottom: 0;
+      border-right: 1px solid var(--outlinegray);
+
+      img {
+        height: 100%;
+        aspect-ratio: auto;
+      }
+    }
+  }
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr));
+  gap: 1.25em;
+  margin: 1.5em 0;
+
+  > .card {
+    margin: 0;
+  }
+
+  @media (max-width: 780px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+// ── Form ───────────────────────────────────────────────────
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1em;
+  font-family: var(--font-body);
+  max-width: 34em;
+  margin: 1.5em 0;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+
+  > label,
+  > legend {
+    padding: 0;
+    font-family: var(--font-body);
+    font-weight: 600;
+    color: var(--dark);
+  }
+
+  > legend {
+    margin-bottom: 0.3em;
+  }
+}
+
+.field-req {
+  margin-left: 0.2em;
+  color: var(--ui-danger);
+}
+
+.field-help {
+  margin: 0;
+  font-size: 0.85em;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.input {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  padding: 0.5em 0.75em;
+  font-family: var(--font-body);
+  font-size: 1em;
+  line-height: 1.4;
+  color: var(--dark);
+  background: var(--light);
+  border: 1px solid var(--outlinegray);
+  border-radius: var(--ui-radius);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &::placeholder {
+    color: var(--muted);
+    opacity: 1;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: var(--tertiary);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--secondary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--secondary) 28%, transparent);
+  }
+
+  &:user-invalid {
+    border-color: var(--ui-danger);
+
+    &:focus {
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-danger) 28%, transparent);
+    }
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: var(--lightgray);
+  }
+
+  &[readonly] {
+    background: var(--lightgray);
+  }
+}
+
+textarea.input {
+  min-height: 7em;
+  resize: vertical;
+}
+
+// Native <select> with a chevron drawn from two gradients, so it follows currentColor.
+select.input {
+  padding-right: 2.2em;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 1.15em) 55%, calc(100% - 0.8em) 55%;
+  background-size: 0.35em 0.35em, 0.35em 0.35em;
+  background-repeat: no-repeat;
+
+  &:has(option[value=""]:checked) {
+    color: var(--muted);
+  }
+
+  option {
+    color: var(--dark);
+  }
+}
+
+.check {
+  display: flex;
+  gap: 0.6em;
+  align-items: flex-start;
+  line-height: 1.4;
+  color: var(--gray);
+  cursor: pointer;
+
+  input {
+    flex: none;
+    width: 1.1em;
+    height: 1.1em;
+    margin: 0.15em 0 0;
+    accent-color: var(--primary);
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: 2px solid var(--ui-focus);
+      outline-offset: 2px;
+    }
+  }
+}
+
+.field-radio .check + .check {
+  margin-top: 0.2em;
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.6em;
+  align-items: center;
+}
+
+.form-status {
+  margin: 0;
+  padding-left: 0.75em;
+  border-left: 3px solid var(--outlinegray);
+  line-height: 1.4;
+
+  &:empty {
+    display: none;
+  }
+
+  &[data-state="success"] {
+    color: var(--ui-success);
+    border-color: var(--ui-success);
+  }
+
+  &[data-state="error"] {
+    color: var(--ui-danger);
+    border-color: var(--ui-danger);
+  }
+}
+
+// Honeypot: present for bots, invisible and unreachable for people.
+.form-hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+// ── Carousel ───────────────────────────────────────────────
+.carousel {
+  --per-view: var(--per-view-wide, 1);
+  --carousel-gap: 1em;
+  margin: 1.5em 0;
+  font-family: var(--font-body);
+
+  @media (max-width: 780px) {
+    --per-view: 1;
+  }
+}
+
+.carousel-track {
+  position: relative;
+  display: flex;
+  gap: var(--carousel-gap);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding-bottom: 0.25em; // room for the focus ring and a native scrollbar, if shown
+
+  @media (prefers-reduced-motion: reduce) {
+    scroll-behavior: auto;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ui-focus);
+    outline-offset: 3px;
+  }
+}
+
+// With working controls the scrollbar is redundant; without JS it stays as the fallback.
+.carousel:has(.carousel-controls:not([hidden])) .carousel-track {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.carousel-slide {
+  display: flex;
+  flex: 0 0
+    calc(
+      (100% - (var(--per-view) - 1) * var(--carousel-gap)) / var(--per-view)
+    );
+  flex-direction: column;
+  min-width: 0;
+  scroll-snap-align: start;
+
+  > .card {
+    flex: 1;
+    margin: 0;
+  }
+}
+
+.carousel-figure {
+  margin: 0;
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: var(--slide-ratio, 16 / 9);
+    object-fit: cover;
+    margin: 0; // base.scss gives every img `margin: 1em 0`
+    background: var(--lightgray);
+    border: 1px solid var(--outlinegray);
+    border-radius: 3px;
+  }
+
+  figcaption {
+    margin-top: 0.5em;
+    font-size: 0.9em;
+    line-height: 1.4;
+    color: var(--muted);
+  }
+}
+
+.carousel-text {
+  padding: 0.25em 0.25em 0.25em 1em;
+  border-left: 3px solid var(--secondary);
+
+  > :first-child {
+    margin-top: 0;
+  }
+
+  > :last-child {
+    margin-bottom: 0;
+  }
+}
+
+.carousel-controls {
+  display: flex;
+  gap: 0.75em;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.75em;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.carousel-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 1.9em;
+  height: 1.9em;
+  padding: 0;
+  font-size: 1em;
+  color: var(--gray);
+  background: transparent;
+  border: 1px solid var(--outlinegray);
+  border-radius: 5px; // matches .about-social
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease;
+
+  svg {
+    width: 1.1em;
+    height: 1.1em;
+  }
+
+  &:hover:not(:disabled) {
+    color: var(--secondary);
+    border-color: var(--secondary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ui-focus);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+}
+
+.carousel-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.1em;
+  align-items: center;
+  justify-content: center;
+}
+
+// 1.5em hit area around a 0.5em dot.
+.carousel-dot {
+  position: relative;
+  width: 1.5em;
+  height: 1.5em;
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 50% auto auto 50%;
+    width: 0.5em;
+    height: 0.5em;
+    background: var(--outlinegray);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: background-color 0.2s ease, transform 0.2s ease;
+  }
+
+  &:hover::before {
+    background: var(--tertiary);
+  }
+
+  &[aria-current="true"]::before {
+    background: var(--primary);
+    transform: translate(-50%, -50%) scale(1.3);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ui-focus);
+    outline-offset: -2px;
+    border-radius: 4px;
+  }
+
+  &[hidden] {
+    display: none;
+  }
+}

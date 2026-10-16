@@ -102,6 +102,10 @@
   <script defer src="{{$callouts.RelPermalink}}"></script>
   {{ end }}
 
+  <!-- UI components (carousel arrows/dots, in-place form submit). Delegated listeners, bound once. -->
+  {{ $components := resources.Get "js/components.js" | resources.Fingerprint "md5" | resources.Minify }}
+  <script defer src="{{$components.RelPermalink}}"></script>
+
   <!-- Preload page vars -->
   {{$idx := partialCached "lib/build-index.html" . "build-index" }}
   {{$linkIndexJSON := (dict "index" (dict "links" $idx.links "backlinks" $idx.backlinks) "links" $idx.edges) | jsonify }}

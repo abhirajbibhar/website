@@ -1,0 +1,22 @@
+{{- /* One slide of {{< carousel >}}.
+         - with src: an image slide; the inner text (if any) becomes its caption.
+         - without src: free content. Markdown text is rendered; nested shortcodes such as
+           {{< card >}} are passed through as HTML.
+       href makes an image slide link somewhere. alt="" marks the image decorative. */ -}}
+{{- $src := or (.Get "src") (.Get "image") -}}
+{{- $inner := strings.TrimSpace .Inner -}}
+<div class="carousel-slide" data-carousel-slide role="group" aria-roledescription="slide" aria-label="{{ i18n "carousel_slide_of" (dict "n" (add .Ordinal 1) "total" "__SLIDE_TOTAL__") }}">
+  {{- if $src }}
+  <figure class="carousel-figure">
+    {{- $img := partial "ui/img.html" (dict "page" $.Page "src" $src "alt" (.Get "alt" | default "")) -}}
+    {{- with .Get "href" }}<a href="{{ partial "ui/href.html" . | safeURL }}">{{ $img }}</a>{{ else }}{{ $img }}{{ end }}
+    {{- with $.Get "caption" | default (cond (ne $inner "") ($.Page.RenderString (dict "display" "inline") $inner) "") }}
+    <figcaption>{{ . | safeHTML }}</figcaption>
+    {{- end }}
+  </figure>
+  {{- else if hasPrefix $inner "<" }}
+  {{ $inner | safeHTML }}
+  {{- else if $inner }}
+  <div class="carousel-text">{{ $.Page.RenderString $inner }}</div>
+  {{- end }}
+</div>

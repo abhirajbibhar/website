@@ -1,0 +1,22 @@
+{{- /* {{< button href="/about" style="primary|secondary|ghost" size="sm|md|lg" icon="github"
+        newtab="true|false" disabled="true" type="submit" aria-label="…" >}}Label{{< /button >}}
+       Without href it renders a real <button>. The label can also come from label="…". */ -}}
+{{- $label := "" -}}
+{{- with (.Get "label" | default (strings.TrimSpace .Inner)) -}}
+  {{- $label = $.Page.RenderString (dict "display" "inline") . -}}
+{{- end -}}
+{{- partial "ui/button.html" (dict
+      "label"     $label
+      "href"      (.Get "href")
+      "style"     (.Get "style")
+      "size"      (.Get "size")
+      "icon"      (.Get "icon")
+      "type"      (.Get "type")
+      "newtab"    (.Get "newtab" | default "auto" | string)
+      "disabled"  (in (slice "true" "1" "yes") (lower (printf "%v" (.Get "disabled"))))
+      "id"        (.Get "id")
+      "class"     (.Get "class")
+      "ariaLabel" (.Get "aria-label")
+      "name"      (.Get "name")
+      "value"     (.Get "value")
+) -}}

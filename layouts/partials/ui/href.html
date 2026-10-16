@@ -1,0 +1,13 @@
+{{- /* Resolves a link target the same way render-link.html does for plain URLs.
+       Context: a string.
+         - scheme (https:, mailto:, tel:) or protocol-relative (//host) -> untouched
+         - fragment (#id)                                              -> untouched
+         - anything else is a site path                                -> relURL, so it follows
+           whichever host serves the page and the SPA router can pick it up.
+       Returns a string. */ -}}
+{{- $dest := . | string | strings.TrimSpace -}}
+{{- $out := $dest -}}
+{{- if not (or (eq $dest "") (findRE `^[a-zA-Z][a-zA-Z0-9+.-]*:` $dest) (hasPrefix $dest "//") (hasPrefix $dest "#")) -}}
+  {{- $out = $dest | relURL -}}
+{{- end -}}
+{{- return $out -}}

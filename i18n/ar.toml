@@ -75,3 +75,33 @@ other = "الحساب"
 
 [portrait_alt]
 other = "صورة {{ .name }}"
+
+[carousel]
+other = "معرض الشرائح"
+
+[carousel_slides]
+other = "الشرائح"
+
+[carousel_prev]
+other = "الشريحة السابقة"
+
+[carousel_next]
+other = "الشريحة التالية"
+
+[carousel_goto]
+other = "الانتقال إلى الشريحة {{ .n }}"
+
+[carousel_slide_of]
+other = "الشريحة {{ .n }} من {{ .total }}"
+
+[form_send]
+other = "إرسال"
+
+[form_sending]
+other = "جارٍ الإرسال…"
+
+[form_success]
+other = "شكرًا لك، تم إرسال رسالتك."
+
+[form_error]
+other = "حدث خطأ ولم تُرسل رسالتك. يُرجى المحاولة مرة أخرى."

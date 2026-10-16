@@ -1,0 +1,98 @@
+{{- /* One form control with its label, help text and states.
+       {{< field name="email" type="email" label="Email" help="I only use it to reply."
+                 placeholder="you@example.org" required="true" autocomplete="email" >}}
+       type: text (default) email tel url number password date search | textarea | select |
+             radio | checkbox
+       select / radio: options="red, green:Dark green, blue"   (value or value:Label)
+       select: placeholder="Choose one" adds a disabled first option.
+       checkbox: label may contain markdown, e.g. links.
+       Other attributes: value, rows, min, max, step, minlength, maxlength, pattern,
+       autocomplete, disabled, readonly, id. */ -}}
+{{- $name := .Get "name" -}}
+{{- if not $name }}{{ errorf "field shortcode on page %q needs name=\"…\"" .Page.Path }}{{ end -}}
+{{- $type := lower (.Get "type" | default "text" | string) -}}
+{{- $label := .Get "label" | default (humanize $name) | string -}}
+{{- $parent := 0 -}}{{- with .Parent }}{{ $parent = .Ordinal }}{{ end -}}
+{{- $id := .Get "id" | default (printf "f%d-%s-%d" $parent $name .Ordinal) -}}
+{{- $help := .Get "help" | default "" | string -}}
+{{- $value := .Get "value" | default "" | string -}}
+{{- $truthy := slice "true" "1" "yes" -}}
+{{- $required := in $truthy (lower (printf "%v" (.Get "required"))) -}}
+{{- $disabled := in $truthy (lower (printf "%v" (.Get "disabled"))) -}}
+{{- $readonly := in $truthy (lower (printf "%v" (.Get "readonly"))) -}}
+{{- $helpId := print $id "-help" -}}
+
+{{- /* Optional pass-through attributes, escaped. */ -}}
+{{- $attrs := "" -}}
+{{- range $k := slice "placeholder" "autocomplete" "min" "max" "step" "minlength" "maxlength" "pattern" "rows" -}}
+  {{- if and (eq $k "placeholder") (eq $type "select") -}}{{- /* a select's placeholder is its first <option> */ -}}
+  {{- else -}}
+    {{- with $.Get $k -}}{{- $attrs = printf `%s %s="%s"` $attrs $k (. | string | htmlEscape) -}}{{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- if $required }}{{ $attrs = print $attrs " required" }}{{ end -}}
+{{- if $disabled }}{{ $attrs = print $attrs " disabled" }}{{ end -}}
+{{- if $readonly }}{{ $attrs = print $attrs " readonly" }}{{ end -}}
+{{- if $help }}{{ $attrs = printf `%s aria-describedby="%s"` $attrs $helpId }}{{ end -}}
+
+{{- $opts := slice -}}
+{{- with .Get "options" -}}
+  {{- range split (. | string) "," -}}
+    {{- $o := strings.TrimSpace . -}}
+    {{- if $o -}}
+      {{- $kv := split $o ":" -}}
+      {{- if gt (len $kv) 1 -}}
+        {{- $opts = $opts | append (dict "value" (strings.TrimSpace (index $kv 0)) "label" (strings.TrimSpace (delimit (after 1 $kv) ":"))) -}}
+      {{- else -}}
+        {{- $opts = $opts | append (dict "value" $o "label" $o) -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+
+{{- if eq $type "checkbox" -}}
+<div class="field field-checkbox">
+  <label class="check" for="{{ $id }}">
+    <input type="checkbox" id="{{ $id }}" name="{{ $name }}" value="{{ $value | default "yes" }}"{{ $attrs | safeHTMLAttr }}>
+    <span>{{ $.Page.RenderString (dict "display" "inline") $label }}</span>
+  </label>
+  {{- with $help }}
+  <p class="field-help" id="{{ $helpId }}">{{ $.Page.RenderString (dict "display" "inline") . }}</p>
+  {{- end }}
+</div>
+{{- else if eq $type "radio" -}}
+<fieldset class="field field-radio"{{ if $help }} aria-describedby="{{ $helpId }}"{{ end }}>
+  <legend>{{ $label }}{{ if $required }}<span class="field-req" aria-hidden="true">*</span>{{ end }}</legend>
+  {{- range $i, $o := $opts }}
+  <label class="check" for="{{ $id }}-{{ $i }}">
+    <input type="radio" id="{{ $id }}-{{ $i }}" name="{{ $name }}" value="{{ $o.value }}"
+      {{- if $required }} required{{ end }}{{ if $disabled }} disabled{{ end }}{{ if eq $o.value $value }} checked{{ end }}>
+    <span>{{ $o.label }}</span>
+  </label>
+  {{- end }}
+  {{- with $help }}
+  <p class="field-help" id="{{ $helpId }}">{{ $.Page.RenderString (dict "display" "inline") . }}</p>
+  {{- end }}
+</fieldset>
+{{- else -}}
+<div class="field field-{{ $type }}">
+  <label for="{{ $id }}">{{ $label }}{{ if $required }}<span class="field-req" aria-hidden="true">*</span>{{ end }}</label>
+  {{- if eq $type "textarea" }}
+  <textarea class="input" id="{{ $id }}" name="{{ $name }}"{{ $attrs | safeHTMLAttr }}>{{ $value }}</textarea>
+  {{- else if eq $type "select" }}
+  <select class="input select" id="{{ $id }}" name="{{ $name }}"{{ $attrs | safeHTMLAttr }}>
+    {{- with $.Get "placeholder" }}
+    <option value="" disabled{{ if not $value }} selected{{ end }}>{{ . }}</option>
+    {{- end }}
+    {{- range $opts }}
+    <option value="{{ .value }}"{{ if eq .value $value }} selected{{ end }}>{{ .label }}</option>
+    {{- end }}
+  </select>
+  {{- else }}
+  <input class="input" type="{{ $type }}" id="{{ $id }}" name="{{ $name }}"{{ with $value }} value="{{ . }}"{{ end }}{{ $attrs | safeHTMLAttr }}>
+  {{- end }}
+  {{- with $help }}
+  <p class="field-help" id="{{ $helpId }}">{{ $.Page.RenderString (dict "display" "inline") . }}</p>
+  {{- end }}
+</div>
+{{- end -}}

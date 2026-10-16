@@ -1,0 +1,5 @@
+{{- /* {{< cards cols="3" >}} {{< card … >}} … {{< /cards >}} — responsive grid of cards.
+       cols is the column count on wide screens (1–4, default 2); it collapses to one column
+       on narrow screens. */ -}}
+{{- $cols := int (.Get "cols" | default 2) -}}
+<div class="cards" style="--cols: {{ $cols }}">{{ .Inner | safeHTML }}</div>
