@@ -10,7 +10,7 @@ ignoreFiles = [
     "/content/notes/*",
 ]
 
-summaryLength = 30
+summaryLength = 35
 enableGitInfo = true
 
 [pagination]
