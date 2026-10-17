@@ -1,7 +1,10 @@
 <div id="search-container">
   <div id="search-space">
-    <input autocomplete="off" id="search-bar" name="search" type="text" aria-label="{{ i18n "search" }}"
-      placeholder="{{ i18n "search_for_something" }}" dir="{{ $.Site.Language.Direction }}">
+    <div class="search-head">
+      <input autocomplete="off" id="search-bar" name="search" type="text" aria-label="{{ i18n "search" }}"
+        placeholder="{{ i18n "search_for_something" }}" dir="{{ $.Site.Language.Direction }}">
+      <button type="button" id="search-close" class="search-esc" aria-label="{{ i18n "close" }}">Esc</button>
+    </div>
     <div id="results-container">
     </div>
   </div>

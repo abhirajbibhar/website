@@ -187,6 +187,9 @@ const registerHandlers = (onInputFn) => {
   searchContainer.addEventListener("click", (_) => {
     closeSearch()
   })
+  // "Esc" key cap in the search box. It sits inside #search-space, whose click handler
+  // stops propagation (so clicks in the box don't close it), hence its own listener.
+  document.getElementById("search-close")?.addEventListener("click", closeSearch)
   document.getElementById("search-space").addEventListener("click", (evt) => {
     evt.stopPropagation()
   })
