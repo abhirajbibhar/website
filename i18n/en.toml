@@ -105,3 +105,12 @@ other = "Thanks, your message was sent."
 
 [form_error]
 other = "Something went wrong and your message was not sent. Please try again."
+
+[graph]
+other = "Graph"
+
+[global_graph]
+other = "Global Graph"
+
+[close]
+other = "Close"

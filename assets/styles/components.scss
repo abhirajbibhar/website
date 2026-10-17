@@ -499,8 +499,10 @@ select.input {
   }
 }
 
-// With working controls the scrollbar is redundant; without JS it stays as the fallback.
-.carousel:has(.carousel-controls:not([hidden])) .carousel-track {
+// Controls make the native scrollbar redundant. Keyed on the controls existing (not on
+// them being un-hidden) so the scrollbar never flashes before JS runs or after a
+// router morph resets `hidden`. Touch, trackpad and arrow keys still scroll the track.
+.carousel:has(.carousel-controls) .carousel-track {
   scrollbar-width: none;
 
   &::-webkit-scrollbar {

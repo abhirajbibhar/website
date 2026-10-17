@@ -18,7 +18,7 @@
     return Array.prototype.slice.call(panel.querySelectorAll(ROW_SELECTOR));
   }
 
-  // Shortcut hint on the drop-up panel's search row: ⌘/ on Apple hardware, Ctrl /
+  // Shortcut hint on the drop-up panel's search row: ⌘ + / on Apple hardware, Ctrl + /
   // elsewhere. Must stay in sync with the handler in assets/js/util.js.
   function labelShortcutHints() {
     var platform =
@@ -26,9 +26,33 @@
       navigator.platform ||
       navigator.userAgent ||
       "";
-    var label = /Mac|iPhone|iPad|iPod/i.test(platform) ? "\u2318/" : "Ctrl /";
+    var mod = /Mac|iPhone|iPad|iPod/i.test(platform) ? "\u2318" : "Ctrl";
     Array.prototype.forEach.call(document.querySelectorAll("[data-keyshortcut]"), function (el) {
-      el.textContent = label;
+      el.textContent = mod + " + " + (el.getAttribute("data-keyshortcut") || "/");
+    });
+  }
+
+  // The router only swaps .singlePage, so the dock's build-time highlight goes
+  // stale after in-page navigation. Recompute it from the live URL; trailing
+  // slashes are ignored so /about and /about/ behave the same.
+  function normPath(p) {
+    p = (p || "").replace(/\/index\.html$/, "").replace(/\/+$/, "");
+    try { p = decodeURI(p); } catch (e) {}
+    return p;
+  }
+
+  function updateActiveLinks() {
+    var here = normPath(window.location.pathname);
+    Array.prototype.forEach.call(document.querySelectorAll(".dropup-panel a[href]"), function (a) {
+      if (a.target === "_blank") return;
+      var url;
+      try { url = new URL(a.getAttribute("href"), window.location.origin); } catch (e) { return; }
+      if (url.origin !== window.location.origin) return;
+      var target = normPath(url.pathname);
+      var active = target === here || (target !== "" && here.indexOf(target + "/") === 0);
+      a.classList.toggle("is-active", active);
+      if (active) a.setAttribute("aria-current", "page");
+      else a.removeAttribute("aria-current");
     });
   }
 
@@ -37,6 +61,7 @@
     if (!dropups.length) return;
 
     labelShortcutHints();
+    updateActiveLinks();
 
     function triggerOf(d) {
       return d.querySelector(".dropup-btn");
@@ -154,6 +179,12 @@
     });
 
     window.addEventListener("million:navigate", function () {
+      closeAll(null);
+      updateActiveLinks();
+    });
+    window.addEventListener("popstate", updateActiveLinks);
+    // Other scripts (the graph modal) ask the dock to fold away.
+    window.addEventListener("dock:close", function () {
       closeAll(null);
     });
   }

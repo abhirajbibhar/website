@@ -90,6 +90,16 @@
   }
   window.initCarousels = initCarousels
 
+  // Nothing else was calling this, so the controls stayed `hidden` (and the native
+  // scrollbar stayed visible). Run on load and after every SPA navigation; the second
+  // frame gives the router's DOM morph time to finish.
+  const refreshCarousels = () => requestAnimationFrame(() => requestAnimationFrame(initCarousels))
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", refreshCarousels)
+  else refreshCarousels()
+  window.addEventListener("million:navigate", refreshCarousels)
+  window.addEventListener("load", initCarousels)
+  window.addEventListener("popstate", refreshCarousels)
+
   document.addEventListener("click", (e) => {
     const el = e.target.closest("[data-carousel-prev], [data-carousel-next], [data-carousel-goto]")
     const root = el && el.closest("[data-carousel]")

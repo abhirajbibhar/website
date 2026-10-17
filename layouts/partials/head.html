@@ -79,6 +79,10 @@
   {{ $nav := resources.Get "js/nav.js" | resources.Fingerprint "md5" | resources.Minify }}
   <script defer src="{{ $nav.RelPermalink }}"></script>
 
+  <!-- Global graph modal (dock menu button + Ctrl/⌘ G) -->
+  {{ $graphModal := resources.Get "js/graph-modal.js" | resources.Fingerprint "md5" | resources.Minify }}
+  <script defer src="{{ $graphModal.RelPermalink }}"></script>
+
   <!-- Floating UI deferred (self-hosted; core first, then dom — never used apart) -->
   <script defer src="{{ $vendor.floatingUI.RelPermalink }}"></script>
 
@@ -146,6 +150,18 @@
         : setTimeout(resolve, 300))
       document.readyState === "complete" ? go() : window.addEventListener("load", go, { once: true })
     })
+    // Global graph for the modal (dock menu → Graph). Always the full global graph, drawn
+    // into whatever container the caller passes; reuses the data fetched for the page.
+    const drawModalGraph = (container, opts = {}) =>
+      ensureGraphLibs().then(() =>
+        drawGraph(
+          BASE,
+          true,
+          {{hugo.Data.graphConfig.paths}},
+          {{hugo.Data.graphConfig.globalGraph}},
+          Object.assign({}, opts, { container: container, fit: true })
+        )
+      )
     const fetchData = afterLoad.then(() => Promise.all([
           fetch("{{ $linkIndex.RelPermalink }}")
             .then(data => data.json())

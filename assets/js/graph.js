@@ -1,4 +1,9 @@
-async function drawGraph(baseUrl, isHome, pathColors, graphConfig) {
+// opts (all optional):
+//   container   – element to draw into (default: #graph-container, the footer graph)
+//   fit         – size the svg to the container's own height (used by the modal)
+//   onNavigate  – called when a node is clicked, just before SPA navigation
+// Returns the d3 simulation so a caller that discards the graph can stop it.
+async function drawGraph(baseUrl, isHome, pathColors, graphConfig, opts = {}) {
 
   let {
     depth,
@@ -10,7 +15,7 @@ async function drawGraph(baseUrl, isHome, pathColors, graphConfig) {
     repelForce,
   fontSize} = graphConfig;
 
-  const container = document.getElementById("graph-container")
+  const container = opts.container || document.getElementById("graph-container")
   const { index, links, content } = await fetchData
 
   // Use .pathname to remove hashes / searchParams / text fragments
@@ -93,7 +98,9 @@ async function drawGraph(baseUrl, isHome, pathColors, graphConfig) {
       .on("end", enableDrag ? dragended : noop)
   }
 
-  const height = Math.max(container.offsetHeight, isHome ? 500 : 250)
+  const height = opts.fit
+    ? container.offsetHeight || 400
+    : Math.max(container.offsetHeight, isHome ? 500 : 250)
   const width = container.offsetWidth
 
   const simulation = d3
@@ -109,7 +116,7 @@ async function drawGraph(baseUrl, isHome, pathColors, graphConfig) {
     .force("center", d3.forceCenter())
 
   const svg = d3
-    .select("#graph-container")
+    .select(container)
     .append("svg")
     .attr("width", width)
     .attr("height", height)
@@ -162,25 +169,26 @@ async function drawGraph(baseUrl, isHome, pathColors, graphConfig) {
   const node = graphNode
     .append("circle")
     .attr("class", "node")
-    .attr("id", (d) => d.id)
+    .attr("data-id", (d) => d.id)
     .attr("r", nodeRadius)
     .attr("fill", color)
     .style("cursor", "pointer")
     .on("click", (_, d) => {
       // SPA navigation
+      if (opts.onNavigate) opts.onNavigate()
       window.Million.navigate(new URL(`${baseUrl}${decodeURI(d.id).replace(/\s+/g, "-")}/`), ".singlePage")
     })
     .on("mouseover", function (_, d) {
-      d3.selectAll(".node").transition().duration(100).attr("fill", "var(--g-node-inactive)")
+      svg.selectAll(".node").transition().duration(100).attr("fill", "var(--g-node-inactive)")
 
       const neighbours = parseIdsFromLinks([
         ...(index.links[d.id] || []),
         ...(index.backlinks[d.id] || []),
       ])
-      const neighbourNodes = d3.selectAll(".node").filter((d) => neighbours.includes(d.id))
+      const neighbourNodes = svg.selectAll(".node").filter((d) => neighbours.includes(d.id))
       const currentId = d.id
       window.Million.prefetch(new URL(`${baseUrl}${decodeURI(d.id).replace(/\s+/g, "-")}/`))
-      const linkNodes = d3
+      const linkNodes = svg
         .selectAll(".link")
         .filter((d) => d.source.id === currentId || d.target.id === currentId)
 
@@ -204,10 +212,10 @@ async function drawGraph(baseUrl, isHome, pathColors, graphConfig) {
         .attr('dy', d => nodeRadius(d) + 20 + 'px') // radius is in px
     })
     .on("mouseleave", function (_, d) {
-      d3.selectAll(".node").transition().duration(200).attr("fill", color)
+      svg.selectAll(".node").transition().duration(200).attr("fill", color)
 
       const currentId = d.id
-      const linkNodes = d3
+      const linkNodes = svg
         .selectAll(".link")
         .filter((d) => d.source.id === currentId || d.target.id === currentId)
 
@@ -267,4 +275,6 @@ async function drawGraph(baseUrl, isHome, pathColors, graphConfig) {
     node.attr("cx", (d) => d.x).attr("cy", (d) => d.y)
     labels.attr("x", (d) => d.x).attr("y", (d) => d.y)
   })
+
+  return simulation
 }

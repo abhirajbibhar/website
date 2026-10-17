@@ -1,0 +1,103 @@
+// ============================================================================
+// Global graph modal (opened from the dock menu / Ctrl+G)
+// Same 5px radius and teal-tinted border as the footer graph container.
+// ============================================================================
+
+.graph-modal {
+  box-sizing: border-box;
+  // No min(): libsass parses it as its own function and rejects calc() inside.
+  width: calc(100vw - 24px);
+  max-width: 1100px;
+  height: calc(100vh - 24px);
+  height: calc(100dvh - 24px);
+  max-height: 760px;
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  color: var(--dark);
+  background: var(--light);
+  border: 1px solid color-mix(in srgb, var(--secondary) 45%, var(--outlinegray));
+  border-radius: 5px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+
+  &[open] {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &::backdrop {
+    background: rgba(10, 14, 20, 0.55);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+}
+
+// No page scroll behind the modal.
+html:has(.graph-modal[open]) {
+  overflow: hidden;
+}
+
+.graph-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 8px 8px 16px;
+  border-bottom: 1px solid var(--outlinegray);
+
+  h2 {
+    margin: 0;
+    font-family: var(--titleFont);
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--dark);
+  }
+}
+
+// "Esc" key cap; same look as the .kbd-hint badges in the dock menu.
+.graph-modal-close {
+  box-sizing: border-box;
+  padding: 5px 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 0.75rem;
+  line-height: 1;
+  color: var(--gray);
+  background: transparent;
+  border: 1px solid var(--outlinegray);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    color: var(--secondary);
+    border-color: var(--secondary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--link);
+    outline-offset: 2px;
+  }
+}
+
+.graph-modal-body {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+
+  > svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    // Pointer hand is set per node in graph.js; empty space keeps the normal arrow.
+    cursor: default;
+  }
+}
+
+@media all and (max-width: 480px) {
+  .graph-modal {
+    width: calc(100vw - 16px);
+    height: calc(100vh - 16px);
+    height: calc(100dvh - 16px);
+  }
+}
