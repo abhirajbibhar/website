@@ -645,13 +645,50 @@ header {
 .section-li {
   margin-bottom: 1em;
 
+  /* Three fixed columns: date | title + blurb | tags. The tags column is reserved even
+     when an entry has no tags, so every blurb wraps at the same width and never runs
+     under the date or the tags. Date, title and tags share the first line. */
   & > .section {
-    display: flex;
-    align-items: center; 
+    display: grid;
+    grid-template-columns: 7.5em minmax(0, 1fr) 14em;
+    column-gap: 0.5em;
+    align-items: baseline;
 
-    @media all and (max-width: 600px) {
+    & > .spacer {
+      display: none;
+    }
+
+    /* Keep "Sep 22, 2026" on one line. */
+    & > .meta {
+      white-space: nowrap;
+    }
+
+    & > .tags {
+      margin: 0;
+      justify-self: end;
+      text-align: right;
+    }
+
+    /* Tablet and phone (same 780px breakpoint as the rest of the site): drop the tags
+       column so the title and blurb get the full width. */
+    @media all and (max-width: 780px) {
+      grid-template-columns: 7.5em minmax(0, 1fr);
+
       & .tags {
         display: none;
+      }
+    }
+
+    /* Phones: tighter date column. The date's own right padding (from `.section p`) goes,
+       the gap comes from column-gap instead, and the text is a touch smaller so
+       "Sep 22, 2026" still fits on one line (nowrap, set above) in the narrower column. */
+    @media all and (max-width: 600px) {
+      grid-template-columns: 5.8em minmax(0, 1fr);
+      column-gap: 0.4em;
+
+      & > .meta {
+        padding-right: 0;
+        font-size: 0.9em;
       }
     }
 
@@ -678,6 +715,23 @@ header {
   & .meta {
     color: var(--muted);
   }
+
+  & > .section > .desc {
+    min-width: 0;
+  }
+
+  /* One-line blurb under the title: the page description, or an auto excerpt. */
+  & > .section .section-desc {
+    margin: 0.5em 0 0;
+    padding-right: 0;
+    font-size: 0.9em;
+    line-height: 1.4;
+    color: var(--muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 }
 
 @keyframes dropin {
@@ -699,11 +753,20 @@ header {
 .popover {
   z-index: 999;
   position: absolute;
+  top: 0;
+  left: 0;
   width: 20rem;
+  max-width: calc(100vw - 24px);
   display: none;
   background-color: var(--light);
   padding: 1rem;
-  margin: 1rem;
+  margin: 0; /* the gap to the link comes from floating-ui's offset() */
+  /* The card is a child of the <a>; don't inherit its link look. */
+  color: var(--dark);
+  font-weight: 400;
+  font-size: 1rem;
+  text-align: left;
+  text-decoration: none;
   border: 1px solid var(--outlinegray);
   border-radius: 5px;
   pointer-events: none;

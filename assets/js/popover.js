@@ -55,22 +55,37 @@ function initPopover(baseURL, useContextualBacklinks, renderLatex) {
             })
           }
 
-          li.addEventListener("mouseover", () => {
-            // fix tooltip positioning
+          let showTimer
+          const place = () =>
             window.FloatingUIDOM.computePosition(li, el, {
-              middleware: [window.FloatingUIDOM.offset(10), window.FloatingUIDOM.inline(), window.FloatingUIDOM.shift()],
+              // Below the link, left edges aligned; flips above when there is no room
+              // underneath, and is nudged to stay 12px inside the viewport edges.
+              placement: "bottom-start",
+              middleware: [
+                window.FloatingUIDOM.offset(8),
+                window.FloatingUIDOM.inline(),
+                window.FloatingUIDOM.flip({ padding: 12 }),
+                window.FloatingUIDOM.shift({ padding: 12 }),
+              ],
             }).then(({ x, y }) => {
-              Object.assign(el.style, {
-                left: `${x}px`,
-                top: `${y}px`,
-              })
+              Object.assign(el.style, { left: `${x}px`, top: `${y}px` })
             })
-
-            el.classList.add("visible")
-          })
-          li.addEventListener("mouseout", () => {
+          const show = () => {
+            clearTimeout(showTimer)
+            // Small hover-intent delay so cards don't flash while the pointer passes over links.
+            showTimer = setTimeout(() => {
+              el.classList.add("visible") // must be displayed before it can be measured
+              place()
+            }, 120)
+          }
+          const hide = () => {
+            clearTimeout(showTimer)
             el.classList.remove("visible")
-          })
+          }
+          li.addEventListener("mouseenter", show)
+          li.addEventListener("mouseleave", hide)
+          li.addEventListener("focus", show)
+          li.addEventListener("blur", hide)
         }
       })
   }).catch(() => {}) // index failed to load: no previews, but nothing else should break

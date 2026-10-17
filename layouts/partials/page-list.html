@@ -10,13 +10,21 @@
 {{- $level := .level | default 2 -}}
 <ul class="section-ul">
     {{- range $pages -}}
+    {{- /* One-line blurb under the title; see partials/excerpt.html. */ -}}
+    {{- $blurb := partial "excerpt.html" . -}}
+    {{- /* The title links below deliberately have no data-src: the hover preview card would
+           only repeat the title, date and a few words of the blurb already on the row. */ -}}
+    {{- $blurb = $blurb | truncate 180 -}}
     <li class="section-li">
         <div class="section">
             <p class="meta">
                 {{partial "date-fmt.html" .}}
             </p>
             <div class="desc">
-              {{ printf "<h%d class=\"section-title\">" $level | safeHTML }}<a href="{{ .RelPermalink }}" class="internal-link" data-src="{{ .RelPermalink }}">{{- .Title -}}</a>{{ printf "</h%d>" $level | safeHTML }}
+              {{ printf "<h%d class=\"section-title\">" $level | safeHTML }}<a href="{{ .RelPermalink }}" class="internal-link">{{- .Title -}}</a>{{ printf "</h%d>" $level | safeHTML }}
+              {{- with $blurb }}
+              <p class="section-desc">{{ . }}</p>
+              {{- end }}
             </div>
             <div class="spacer"></div>
             <ul class="tags">

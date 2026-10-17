@@ -14,16 +14,9 @@
 {{- if .IsHome -}}
   {{- $desc = .Description | default $siteDesc -}}
 {{- else -}}
-  {{- with .Description -}}
-    {{- $desc = . | plainify -}}
-  {{- else -}}
-    {{- with .Params.summary -}}
-      {{- $desc = . | plainify -}}
-    {{- else -}}
-      {{- $summary := .Summary | plainify | htmlUnescape -}}
-      {{- $desc = cond (ne $summary "") $summary $siteDesc -}}
-    {{- end -}}
-  {{- end -}}
+  {{- /* Same text the list pages show; see partials/excerpt.html. */ -}}
+  {{- $ex := partial "excerpt.html" . -}}
+  {{- $desc = cond (ne $ex "") $ex $siteDesc -}}
 {{- end -}}
 {{- $desc = $desc | replaceRE `\s+` " " | strings.TrimSpace | truncate 160 -}}
 {{- if not $desc -}}{{- $desc = $siteDesc -}}{{- end -}}

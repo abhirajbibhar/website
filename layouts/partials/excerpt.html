@@ -1,0 +1,25 @@
+{{- /*
+  One-line blurb for a page, shared by the list pages (page-list.html) and the SEO /
+  link-preview tags (page-meta.html) so both always say the same thing.
+
+  Order: `description` front matter → `summary` front matter → an excerpt taken from the
+  first real paragraph. Headings, callouts, code blocks, tables and figures are skipped,
+  and paragraphs under 30 characters (stray labels, one-word lines) are ignored.
+  Returns plain text, untruncated; callers truncate to suit.
+*/ -}}
+{{- $out := .Description | plainify | htmlUnescape | replaceRE `\s+` " " | strings.TrimSpace -}}
+{{- if not $out -}}
+  {{- with .Params.summary -}}
+    {{- $out = . | plainify | htmlUnescape | replaceRE `\s+` " " | strings.TrimSpace -}}
+  {{- end -}}
+{{- end -}}
+{{- if not $out -}}
+  {{- $html := replaceRE `(?s)<(blockquote|pre|table|figure|nav|aside|style|script)[^>]*>.*?</(blockquote|pre|table|figure|nav|aside|style|script)>` "" (string .Content) -}}
+  {{- range findRE `(?s)<p[^>]*>.*?</p>` $html -}}
+    {{- if not $out -}}
+      {{- $t := . | plainify | htmlUnescape | replaceRE `\s+` " " | strings.TrimSpace -}}
+      {{- if ge (strings.RuneCount $t) 30 }}{{ $out = $t }}{{ end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- return $out -}}
